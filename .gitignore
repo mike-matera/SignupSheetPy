@@ -12,3 +12,11 @@
 
 # Keep my secrets
 /fnf/secrets.py
+
+# Ignore the generated parser
+/signup/parser/StaffSheetLexer.py
+/signup/parser/StaffSheetLexer.tokens
+/signup/parser/StaffSheetListener.py
+/signup/parser/StaffSheetParser.py
+/signup/parser/StaffSheet.tokens
+
