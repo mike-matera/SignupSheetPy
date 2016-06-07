@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  </head>
+  <body>
+  	<h1>Edit Motherfucker</h1>
+	<div class="editor">
+		<form action="/source/" method="post">
+    		{% csrf_token %}
+ 			{{ form }}
+    		<input type="submit" value="Submit" />
+		</form>
+	</div>
+  </body>
+</html>

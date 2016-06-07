@@ -1,0 +1,11 @@
+<h1>Coordinator Roles</h1>
+<ul>
+    {% for source in object_list %}
+    <li>{{ source.role }}  :  
+    <a href="{% url "source_edit" source.role %}">{{ source.role }}</a>
+    <a href="{% url "source_delete" source.role %}">delete</a>
+    </li>
+    {% endfor %}
+</ul>
+
+<a href="{% url "source_new" %}">New</a>

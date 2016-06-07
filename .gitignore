@@ -8,4 +8,7 @@
 *.pyc
 
 # Ignore the contributed libraries
-lib/
+/lib
+
+# Keep my secrets
+/fnf/secrets.py

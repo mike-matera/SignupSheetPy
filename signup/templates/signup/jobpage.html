@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- [START css] -->
+    <link type="text/css" rel="stylesheet" href="static/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="static/bootstrap/css/bootstrap-theme.css" rel="stylesheet">
+    <!-- [END css] -->
+    <style type="text/css">
+      body {
+        padding-top: 40px;
+        padding-bottom: 40px;
+        background-color: #f5f5f5;
+      }
+      blockquote {
+        margin-bottom: 10px;
+        border-left-color: #bbb;
+      }
+      form {
+        margin-top: 10px;
+      }
+      .form-signin input[type="text"] {
+        font-size: 16px;
+        height: auto;
+        margin-bottom: 15px;
+        padding: 7px 9px;
+      }
+      .row {
+        margin-left: 0px;
+        margin-top: 10px;
+        overflow: scroll;
+      }
+    </style>
+  </head>
+  <body>
+	<div class="roletitle">
+	<h1>{{ role }}</h1>
+	<div class="coordinator">
+	{% for coordinator in coordinators %}
+  	  {{ coordinator.name }} <b> {{ coordinator.email }}</b> <img src="{{coordinator.url}}", height=100px></img>
+	{% endfor %}	
+	</div>
+	<div class="jobslist">
+	{% for job in jobs %} 
+		<div class="job">
+		{{ job.title }} 
+		{{ job.description }} 
+		{{ job.start }} 
+		</div>
+	{% endfor %}
+  </body>
+</html>
