@@ -7,3 +7,5 @@
 # Complied Python
 *.pyc
 
+# Ignore the contributed libraries
+lib/
