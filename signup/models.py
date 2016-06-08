@@ -1,17 +1,72 @@
 from __future__ import unicode_literals
 
 from django.db import models
-from django.db.models.fields import TextField, DateTimeField, CharField
+from django.db.models.fields import (
+    TextField, CharField, EmailField, URLField, DateTimeField, IntegerField
+, BooleanField)
 from django.db.models import ForeignKey
 from django.contrib.auth.models import User
-from django.forms import HiddenInput
 
 # Create your models here.
 class Source(models.Model):
     '''This is the source code used to generate the staff sheet'''
-    role = CharField("Coordinator Role Name", max_length=32, primary_key=True)
-    source = TextField()
+    title = CharField("Coordinator Role Name", max_length=32, primary_key=True)
+    source = TextField(default='''
+coordinator "Name" "email@email.com" "http://picture.com/picture.jpg"
+
+description {
+}
+    ''');
     version = DateTimeField("Changed On", auto_now_add=True)
     owner = CharField("Changed By", 
         max_length=32
     )
+
+class Role(models.Model):
+    '''The parsed Role'''
+    source = models.OneToOneField(
+        Source,
+        on_delete=models.CASCADE,
+        primary_key=True,
+    )
+    description = TextField()
+
+class Coordinator(models.Model):
+    '''A coordinator in one role.''' 
+    role = ForeignKey(Role, on_delete=models.CASCADE)
+    name = CharField(max_length=32)
+    email = EmailField()
+    url = URLField()
+
+class Job(models.Model):
+    '''An individual job''' 
+    role = ForeignKey(Role, on_delete=models.CASCADE)
+    tilte = CharField(max_length=32)
+    start = DateTimeField() 
+    end = DateTimeField()
+    description = TextField()
+    needs = IntegerField()
+    protected = BooleanField()
+    
+class Volunteer(models.Model):
+    '''
+    A volunteer in a role
+    
+    The volunteer must be able to join with Job, but it cannot use a public key.
+    Recompiling the Role source will delete Coordinators and Jobs, but should not
+    delete the people who have already signed up. Instead they should be joined 
+    with the natural key of Job which is (role, title, start). This is a shitty
+    join, if it's too slow I can probably figure out how to use hashes as the PK
+    for Volunteer and Job
+    '''
+    user = ForeignKey(User)
+    
+    # The natural key of Job 
+    role = CharField(max_length=32)
+    title = CharField(max_length=32)
+    start = DateTimeField()
+    # --- 
+    
+    name = CharField(max_length=32)
+    comment = TextField()
+    

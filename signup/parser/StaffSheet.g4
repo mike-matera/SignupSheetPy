@@ -1,10 +1,6 @@
 grammar StaffSheet;          
 
-role
-	: 'role' r=QUOTE '(' rolefragment[r] ')'
-	;
-
-rolefragment[rolename]
+rolefragment[sourceobj]
 	: coordinator+ description job*
 	;
 

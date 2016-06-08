@@ -22,3 +22,5 @@
 /signup/parser/StaffSheetParser.py
 /signup/parser/StaffSheet.tokens
 
+# Temorarily while I get the DB ready 
+/signup/migrations

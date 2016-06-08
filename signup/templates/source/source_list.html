@@ -2,10 +2,10 @@
 <ul>
     {% for source in object_list %}
     <div>
-    {{ source.role }} 
+    {{ source.title }} 
     modified by {{ source.owner }} on {{ source.version }}
-    <a href="{% url "source_update" source.role %}">Edit</a>
-    <a href="{% url "source_delete" source.role %}">Delete</a>
+    <a href="{% url "source_update" source.title %}">Edit</a>
+    <a href="{% url "source_delete" source.title %}">Delete</a>
     </li>
     
     </div>
