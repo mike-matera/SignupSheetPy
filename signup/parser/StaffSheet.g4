@@ -1,20 +1,11 @@
 grammar StaffSheet;          
 
-sheet 
-	: statement* 
-	; 
-	
-statement 
-	: campout
-	| role 
+role
+	: 'role' r=QUOTE '(' rolefragment[r] ')'
 	;
 
-campout 
-	: 'campout' 'starts' QUOTE
-	;
-	
-role
-	: 'role' QUOTE '(' coordinator+ description job+ ')'
+rolefragment[rolename]
+	: coordinator+ description job*
 	;
 
 coordinator 

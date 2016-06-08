@@ -4,6 +4,7 @@
 .project
 .pydevproject
 .externalToolBuilders
+.settings 
 
 # Complied Python
 *.pyc
