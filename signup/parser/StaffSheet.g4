@@ -1,6 +1,10 @@
 grammar StaffSheet;          
 
-rolefragment[sourceobj]
+sheet : role+ ; 
+
+role : 'role' QUOTE '(' rolefragment ')' ; 
+
+rolefragment
 	: coordinator+ description job*
 	;
 
@@ -21,9 +25,9 @@ needs
 	;
 	
 timespec 
-	: ('repeat' NUMBER 'times' 'starting' TIME
-		| 'repeat' 'from' TIME 'to' TIME
-		| 'starting' TIME		
+	: ('repeats' NUMBER 'times' 'starting' TIME
+		| 'repeats' 'starting' TIME 'until' TIME
+		| 'starts' TIME		
 		) duration
 	;
 
@@ -33,6 +37,7 @@ NUMBER : DIGIT+ ('.' DIGIT+)? ;
 
 QUOTE : '{' ~[}]* '}' 
 	  | '"' ~["]* '"' 
+	  | '\'' ~[']* '\''
 	  ;
 	   
 TIME  : '@[' ' '* DAY ' '+ TIMEOFDAY ' '* ']' ;

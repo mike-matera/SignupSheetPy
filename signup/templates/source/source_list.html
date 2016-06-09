@@ -12,3 +12,6 @@
     {% endfor %}
 </ul>
 <a href="{% url "source_create" %}">New</a>
+{% if do_bulk %}
+<a href="{% url "source_all" %}">Admin Editor</a>
+{% endif %}

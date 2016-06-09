@@ -32,19 +32,35 @@
     </style>
   </head>
   <body>
-	<div class="roletitle">
-	<h1>{{ role }}</h1>
+	<div class="roleheader">
+	<h1>{{ source.title }}</h1>
 	<div class="coordinator">
 	{% for coordinator in coordinators %}
   	  {{ coordinator.name }} <b> {{ coordinator.email }}</b> <img src="{{coordinator.url}}", height=100px></img>
 	{% endfor %}	
 	</div>
+	<div class="roledescription">
+		{{ role.description | safe }}
+	</div>
 	<div class="jobslist">
 	{% for job in jobs %} 
 		<div class="job">
-		{{ job.title }} 
-		{{ job.description }} 
-		{{ job.start }} 
+		{{ job.job.title }} 
+		{{ job.job.description }} 
+		{{ job.job.start }} 
+		{% for volunteer in job.volunteers %} 
+		<div class="jobperson">
+			{{ volunteer.volunteer.name }} {{ volunteer.volunteer.comment }}
+			{% if volunteer.can_delete != None %}
+				<a href="{% url "delete" pk=volunteer.can_delete %}">Delete</a>
+			{% endif %}
+		</div>
+		{% endfor %}
+		{% if job.can_signup %}
+		<div class="signuplink">
+			<a href="{% url "signup" pk=job.job.id %}">Signup</a>
+		</div>
+		{% endif %}
 		</div>
 	{% endfor %}
   </body>

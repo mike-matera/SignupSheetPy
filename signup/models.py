@@ -1,17 +1,18 @@
 from __future__ import unicode_literals
 
-from django.db import models
-from django.db.models.fields import (
-    TextField, CharField, EmailField, URLField, DateTimeField, IntegerField
-, BooleanField)
-from django.db.models import ForeignKey
 from django.contrib.auth.models import User
+from django.db import models
+from django.db.models import ForeignKey
+from django.db.models.fields import (
+    TextField, CharField, EmailField, URLField, DateTimeField, IntegerField, BooleanField
+)
+
 
 # Create your models here.
 class Source(models.Model):
     '''This is the source code used to generate the staff sheet'''
     title = CharField("Coordinator Role Name", max_length=32, primary_key=True)
-    source = TextField(default='''
+    text = TextField(default='''
 coordinator "Name" "email@email.com" "http://picture.com/picture.jpg"
 
 description {
@@ -42,7 +43,7 @@ class Coordinator(models.Model):
 class Job(models.Model):
     '''An individual job''' 
     source = ForeignKey(Source, on_delete=models.CASCADE)
-    tilte = CharField(max_length=32)
+    title = CharField(max_length=32)
     start = DateTimeField() 
     end = DateTimeField()
     description = TextField()
