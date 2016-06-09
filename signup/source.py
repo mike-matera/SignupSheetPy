@@ -8,6 +8,7 @@ from django.forms import ValidationError
 from django.http import Http404
 from django.shortcuts import render, redirect
 from django.utils.translation import gettext_lazy as _
+from django.db import transaction
 
 from models import Source
 from parser.StaffSheetLexer import StaffSheetLexer
@@ -20,20 +21,23 @@ from datetime import datetime
 from datetime import timedelta
 import re
 from models import *
+from _mysql import IntegrityError
 
 class SchemaBuilder(StaffSheetListener) :
     
-    rows = []
-    stack = []
-    context = []
-        
+    epoch = datetime.strptime('06/29/2016', '%m/%d/%Y')
+    
+    def __init__(self):
+        self.rows = []
+        self.stack = []
+        self.context = []
+    
     def enterRolefragment(self, ctx): 
-        role = Role()
-        role.source = ctx.sourceobj
-        self.context.append(role);
+        self.context.append(ctx.sourceobj);
             
     def exitRolefragment(self, ctx):
-        role = self.context.pop()
+        role = Role()
+        role.source = self.context.pop()
         role.description = self.stack.pop()
         role.save() 
         # Now that the role exists, we can create the other rows
@@ -41,9 +45,11 @@ class SchemaBuilder(StaffSheetListener) :
         for row in self.rows :
             row.save()
 
+        self.rows = []
+
     def exitCoordinator(self, ctx):
         coord = Coordinator()
-        coord.role = self.context[-1]
+        coord.source = self.context[-1]
         coord.name = self.__strToken(ctx.QUOTE(0))
         coord.email = self.__strToken(ctx.QUOTE(1))
         coord.url = self.__strToken(ctx.QUOTE(2))
@@ -55,7 +61,7 @@ class SchemaBuilder(StaffSheetListener) :
     def exitJob(self, ctx):
         for slot in self.stack.pop() :
             job = Job()
-            job.role = self.context[-1]
+            job.source = self.context[-1]
             job.title = self.__strToken(ctx.QUOTE(0))
             job.description = self.__strToken(ctx.QUOTE(1))
             job.start = slot['begin']
@@ -257,26 +263,24 @@ def source_update(request, pk, template_name='source/source_form.html'):
 
     form = SkipperForm(request.POST or None, instance=source)
     if form.is_valid():
-        # There is no update, sources must be deleted and remade.
-        # on_delete=CASCADE does nothing. Fucking Django... 
-        # manually delete objects...
-        for job in Job.objects.filter(role__exact=source.title) :
-            job.delete()
-        for coord in Coordinator.objects.filter(role__exact=source.title) :
-            coord.delete()
-        for role in Role.objects.filter(source__exact=source) :
-            role.delete()
-        source.delete()
-
-        # Create a new one 
-        source = form.save(commit=False)
-        source.title = pk
-        source.owner = request.user.username
-        source.save()
         
-        # Now build it.
-        build(source)
-               
+        try: 
+            with transaction.atomic() :
+                # There is no update, sources must be deleted and remade.
+                # on_delete=CASCADE is emulated, but it works when my objects don't suck. 
+                source.delete()
+
+                # Create a new one 
+                source = form.save(commit=False)
+                source.title = pk
+                source.owner = request.user.username
+                source.save()
+        
+                # Now build it.
+                build(source)
+        except IntegrityError as e:
+            print "Transaction error:", e
+        
         return redirect('source_list')
     return render(request, template_name, {'form':form})
 
@@ -287,8 +291,7 @@ def source_delete(request, pk, template_name='source/confirm_delete.html'):
         raise Http404("Source does not exist")
 
     if request.method=='POST':
-        if "submit" in request.POST['submit'] :
-            source.delete()
+        source.delete()
         return redirect('source_list')
     
     return render(request, template_name, {'object':source})

@@ -31,16 +31,17 @@ class Role(models.Model):
     )
     description = TextField()
 
+# XXX: Fix me Coordinator and Job should have Source as their FK
 class Coordinator(models.Model):
     '''A coordinator in one role.''' 
-    role = ForeignKey(Role, on_delete=models.CASCADE)
+    source = ForeignKey(Source, on_delete=models.CASCADE)
     name = CharField(max_length=32)
     email = EmailField()
     url = URLField()
 
 class Job(models.Model):
     '''An individual job''' 
-    role = ForeignKey(Role, on_delete=models.CASCADE)
+    source = ForeignKey(Source, on_delete=models.CASCADE)
     tilte = CharField(max_length=32)
     start = DateTimeField() 
     end = DateTimeField()
@@ -62,7 +63,7 @@ class Volunteer(models.Model):
     user = ForeignKey(User)
     
     # The natural key of Job 
-    role = CharField(max_length=32)
+    source = CharField(max_length=32)
     title = CharField(max_length=32)
     start = DateTimeField()
     # --- 
