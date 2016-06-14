@@ -1,5 +1,12 @@
-<h1>Coordinator Roles</h1>
+{% extends 'base.html' %}
+
+{% block sitenav %}
+{% include 'sitenav.html' %}
+{% endblock %}
+
+{% block content %}
 <ul>
+	<h1>Administrator Interface</h1>
     {% for source in object_list %}
     <div>
     {{ source.title }} 
@@ -12,6 +19,8 @@
     {% endfor %}
 </ul>
 <a href="{% url "source_create" %}">New</a>
-{% if do_bulk %}
+{% if user.is_superuser %}
 <a href="{% url "source_all" %}">Admin Editor</a>
 {% endif %}
+<a href="{% url "default" %}">View Site</a>
+{% endblock %}

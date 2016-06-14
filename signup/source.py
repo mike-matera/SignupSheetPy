@@ -14,7 +14,9 @@ from parser.StaffSheetParser import StaffSheetParser
 from django.db.utils import IntegrityError
 
 from schema import build, build_all, ReportedException
-        
+
+from django.core.cache import cache
+
 class SkipperForm(ModelForm):
     class Meta:
         model = Source
@@ -47,7 +49,6 @@ def source_list(request, template_name='source/source_list.html'):
     sources = Source.objects.order_by('title')
     data = {}
     data['object_list'] = sources
-    data['do_bulk'] = request.user.is_superuser
     
     return render(request, template_name, data)
 
@@ -61,7 +62,9 @@ def source_create(request, template_name='source/source_form.html'):
         
         # Now build it.
         build(sourceobj=source)
-                
+
+        # Make sure cached pages update
+        cache.clear()                
         return redirect('source_list')
     return render(request, template_name, {'form':form})
 
@@ -91,6 +94,7 @@ def source_update(request, pk, template_name='source/source_form.html'):
         except IntegrityError as e:
             print "Transaction error:", e
         
+        cache.clear()                
         return redirect('source_list')
     return render(request, template_name, {'form':form})
 
@@ -102,6 +106,7 @@ def source_delete(request, pk, template_name='source/confirm_delete.html'):
 
     if request.method=='POST':
         source.delete()
+        cache.clear()                
         return redirect('source_list')
     
     return render(request, template_name, {'object':source})
@@ -123,6 +128,7 @@ def source_all(request, template_name='source/source_bulkedit.html'):
             except IntegrityError as e:
                 print "Transaction error:", e
 
+            cache.clear()                
             return redirect('source_list')
         else:
             return render(request, template_name, {'form':form})

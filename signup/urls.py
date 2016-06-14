@@ -2,6 +2,7 @@ from django.conf.urls import url
 
 from signup.source import source_list, source_create, source_update, source_delete, source_all
 from views import default, signup, delete, jobs
+from registration import register
 
 urlpatterns = [
     url(r'^$', default, name='default'),
@@ -13,4 +14,5 @@ urlpatterns = [
     url(r'^source/u/(?P<pk>[a-zA-Z0-9\-_ ]+)$', source_update, name='source_update'),
     url(r'^source/d/(?P<pk>[a-zA-Z0-9\-_ ]+)$', source_delete, name='source_delete'),
     url(r'^source/a$', source_all, name='source_all'),
+    url(r'^register/$', register, name='register'),
 ]

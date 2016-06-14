@@ -13,7 +13,7 @@ from parser.StaffSheetParser import StaffSheetParser
 
 class SchemaBuilder(StaffSheetListener) :
     
-    epoch = datetime.strptime('06/29/2016 00:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
+    epoch = datetime.strptime('07/28/2016 00:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
         
     def __init__(self, source=None):
         self.rows = []
@@ -48,7 +48,6 @@ class SchemaBuilder(StaffSheetListener) :
         # Now that the role exists, we can create the other rows
         # which have FK constraints 
         for row in self.rows :
-            print "Saving row: ", row
             row.save()
 
         self.rows = []
@@ -78,9 +77,7 @@ class SchemaBuilder(StaffSheetListener) :
             job.protected = False
             if ctx.getChild(0).getText() == 'protected' :
                 job.protected = True
-            print "APPENDING ROW", job
             self.rows.append(job)
-        print "ROWS are:", self.rows
                            
     def exitTimespec(self, ctx):
         times = [self.__timespecToken(x) for x in ctx.getTokens(StaffSheetLexer.TIME)]
@@ -101,9 +98,9 @@ class SchemaBuilder(StaffSheetListener) :
             while cursor < until : 
                 slot = {}
                 slot['begin'] = cursor
-                slot['end'] = slot['begin'] + duration
+                cursor += duration
+                slot['end'] = cursor
                 slots.append(slot)
-                cursor += duration 
         else:         
             slot = {}
             slot['begin'] = times[0]
@@ -146,19 +143,19 @@ class SchemaBuilder(StaffSheetListener) :
         h = 0
         m = 0
         if day[1:] == 'riday' :
-            d = 0
-        elif day[1:] == 'aturday' :
             d = 1
-        elif day[1:] == 'unday' :
+        elif day[1:] == 'aturday' :
             d = 2
-        elif day[1:] == 'onday' :
+        elif day[1:] == 'unday' :
             d = 3
-        elif day[1:] == 'uesday' :
+        elif day[1:] == 'onday' :
             d = 4
-        elif day[1:] == 'ednesday' :
+        elif day[1:] == 'uesday' :
             d = 5
-        elif day[1:] == 'ursday' :
+        elif day[1:] == 'ednesday' :
             d = 6
+        elif day[1:] == 'hursday' :
+            d = 0
         else :
             raise ValueError("This date is fucked: " + spec)
 
@@ -169,7 +166,7 @@ class SchemaBuilder(StaffSheetListener) :
         else :  
             regex = re.compile("(\d+):(\d+)\s*(am|pm)")
             matcher = regex.search(time)
-            h = int(matcher.group(1))
+            h = int(matcher.group(1)) % 12
             if matcher.group(3) == 'pm' :
                 h += 12
             m = int(matcher.group(2))

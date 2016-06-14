@@ -1,10 +1,27 @@
+{% load staticfiles %}        
 <!DOCTYPE html>
 <html>
     <head>
-        <title>My Project</title>
-    </head>
-
+        <title>The 2016 FnF Volunteer Signup Sheet</title>
+		<link rel="stylesheet" href="{% static 'bootstrap-3.3.6-dist/css/bootstrap.min.css'%}">
+		<link rel="stylesheet" href="{% static 'bootstrap-3.3.6-dist/css/bootstrap-theme.min.css'%}">
+		<link href="https://fonts.googleapis.com/css?family=Patrick+Hand" rel="stylesheet">
+		<link rel="stylesheet" href="{% static 'fnf.css'%}">
+	</head>
     <body>
+		<script src="{% static 'admin/js/vendor/jquery/jquery.min.js'%}"></script>
+		<script src="{% static 'bootstrap-3.3.6-dist/js/bootstrap.min.js'%}"></script>
+	<div class="page-header">
+	<h1>FnF XX Volunteer Signup Sheet</h1>
+	</div>
+	<div class="sitenav">
+	{% block sitenav %}{% endblock sitenav %}
+	</div>
+	<div class="content">
     {% block content %}{% endblock content %}
+	</div>
+	<div class="page-footer">
+	Site footer
+	</div>
     </body>
 </html>

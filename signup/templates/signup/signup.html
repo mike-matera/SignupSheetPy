@@ -1,16 +1,18 @@
-<!DOCTYPE html>
-<html>
-  <head>
-  </head>
-  <body>
-  	<h1>Signup</h1>
-	<div class="signup">
-		<form method="post">
-    		{% csrf_token %}
- 			{{ form }}
-    		<input type="submit" value="Submit" />
-			<a href="{% url "jobs" ret %}">Cancel</a>
-		</form>
-	</div>
-  </body>
-</html>
+{% load crispy_forms_tags %}
+
+<div id="modal-content">
+	<form method="post" action="{% url "signup" job.pk %}">
+  	{% csrf_token %}
+    <div class="modal-header">
+      <h4>{{ job.title }}</h4>
+  	  <p>{{ job.start | date:"l P" }} to {{ job.end | date:"l P" }}
+    </div>
+    <div class="modal-body">
+  	  {{ form | crispy }} 
+    </div>
+    <div class="modal-footer">
+        <input type="submit" value="Signup" class="btn btn-primary"></input>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    </div>
+	</form>
+</div>

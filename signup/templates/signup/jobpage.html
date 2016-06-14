@@ -1,43 +1,38 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <!-- [START css] -->
-    <link type="text/css" rel="stylesheet" href="static/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <link type="text/css" rel="stylesheet" href="static/bootstrap/css/bootstrap-theme.css" rel="stylesheet">
-    <!-- [END css] -->
-    <style type="text/css">
-      body {
-        padding-top: 40px;
-        padding-bottom: 40px;
-        background-color: #f5f5f5;
-      }
-      blockquote {
-        margin-bottom: 10px;
-        border-left-color: #bbb;
-      }
-      form {
-        margin-top: 10px;
-      }
-      .form-signin input[type="text"] {
-        font-size: 16px;
-        height: auto;
-        margin-bottom: 15px;
-        padding: 7px 9px;
-      }
-      .row {
-        margin-left: 0px;
-        margin-top: 10px;
-        overflow: scroll;
-      }
-    </style>
-  </head>
-  <body>
+{% extends 'base.html' %}
+{% load cache %}
+
+{% block sitenav %}
+{% include 'sitenav.html' %}
+{% endblock %}
+
+{% block content %}
+	{% cache 600 jobpage user.username source.title %}
+	<section>
+	<div class="sitemenu">
+	<ul>
+	{% for s in sources %} 
+	  	<li><a href="{% url "jobs" title=s.pk %}">{{s.pk}}</a></li>
+	{% endfor %}
+	</ul>
+  	</div>
+
+	<div class="jobselect">
 	<div class="roleheader">
 	<h1>{{ source.title }}</h1>
-	<div class="coordinator">
-	{% for coordinator in coordinators %}
-  	  {{ coordinator.name }} <b> {{ coordinator.email }}</b> <img src="{{coordinator.url}}", height=100px></img>
-	{% endfor %}	
+	<div class="coordinators">
+
+		<div class="coordinator-pics">
+		{% for coordinator in coordinators %}
+  		  <img src="{{coordinator.url}}"></img>
+		{% endfor %}	
+
+		</div>
+		<div class="coordinator-names">
+		{% for coordinator in coordinators %}
+  		  <span class="coordinator-name">{{ coordinator.name }}</span>
+		{% endfor %}		
+		</div>
+		
 	</div>
 	<div class="roledescription">
 		{{ role.description | safe }}
@@ -45,23 +40,42 @@
 	<div class="jobslist">
 	{% for job in jobs %} 
 		<div class="job">
-		{{ job.job.title }} 
-		{{ job.job.description }} 
-		{{ job.job.start }} 
+
+		<h3>{{ job.job.title }}</h3>
+		<span class="jobtimes">{{ job.job.start | date:"l P" }} to {{ job.job.end | date:"l P" }}</span>
+		<span class="jobdescription">{{ job.job.description }}</span>
+		<p>Volunteers:</p>
+		<div class="jobpeople">
+
 		{% for volunteer in job.volunteers %} 
-		<div class="jobperson">
-			{{ volunteer.volunteer.name }} {{ volunteer.volunteer.comment }}
-			{% if volunteer.can_delete != None %}
-				<a href="{% url "delete" pk=volunteer.can_delete %}">Delete</a>
+			<span class="jobperson">
+			{{ volunteer.volunteer.name | title}} 
+			{% if volunteer.volunteer.comment != "" %}
+				-- "{{ volunteer.volunteer.comment }}"
 			{% endif %}
-		</div>
+			{% if volunteer.can_delete != None %}
+				<a href='javascript:void(0)' onclick='popup_click("{% url "delete" pk=volunteer.can_delete %}");'>(delete)</a>
+			{% endif %}
+			</span>
 		{% endfor %}
-		{% if job.can_signup %}
-		<div class="signuplink">
-			<a href="{% url "signup" pk=job.job.id %}">Signup</a>
-		</div>
+
+
+		{% if job.can_signup > 0 and user.is_authenticated %}	
+			<a href='javascript:void(0)' onclick='popup_click("{% url "signup" pk=job.job.pk %}");'>		
+			<span class="jobneeds">(needs {{ job.can_signup }} more)</span>
+			</a>
 		{% endif %}
+		
+		</div>
+
 		</div>
 	{% endfor %}
-  </body>
-</html>
+	</div>
+	</section>
+
+	{% include "popupform.html" %}	
+	
+	{% endcache %}
+{% endblock %}
+
+

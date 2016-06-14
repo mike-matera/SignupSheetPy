@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'crispy_forms',
     'signup',
 ]
 
@@ -117,6 +118,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
@@ -136,3 +138,12 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+
+#CACHES = {
+#    'default': {
+#        'BACKEND': 'fnf.backend.GaeMemcachedCache',
+#    }
+#}
+
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
