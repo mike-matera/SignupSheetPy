@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}User Preferences{% endblock %}
+
+{% block content %}
+  <h1>You Are Signed Up For...</h1>
+  <div class="jobslist">
+  
+  {% for signup in signups %}
+		<div class="job">
+		<h3>{{ signup.source }} : {{ signup.title }}</h3>
+		<span class="jobtimes">{{ signup.start | date:"l P" }}</span>
+		<a href='javascript:void(0)' onclick='popup_click("{% url "delete" pk=signup.pk %}");'>(delete)</a>
+		</div>
+  {% empty %}
+  <h3>Nothing! Get on it, yo!</h3>
+  {% endfor %}
+  </div>
+  <h1>Update your Name:</h1>
+  <form action="" method="post">
+{% csrf_token %}
+      {{ form.as_p }}
+      <input type="submit" value="Update">
+  </form>
+
+  <h3><a href="{% url 'password_change' %}">Change your password.</a></h3>
+  
+ {% include "popupform.html" %}	
+  
+{% endblock %}
+

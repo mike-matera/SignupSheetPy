@@ -11,8 +11,12 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
-from secrets import local_db_password, local_db_user, local_db_name, secret_key
-
+from secrets import (
+    local_db_password, local_db_user, local_db_name, 
+    production_db_password, production_db_user, production_db_name, 
+    appengine_db_host, appengine_db_name, appengine_db_user,
+    secret_key
+)
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -32,6 +36,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'signup',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,7 +44,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'crispy_forms',
-    'signup',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -83,13 +87,24 @@ if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'HOST': '/cloudsql/<your-project-id>:<your-cloud-sql-instance>',
-            'NAME': '<your-database-name>',
-            'USER': 'root',
+            'HOST': appengine_db_host,
+            'NAME': appengine_db_name,
+            'USER': appengine_db_user,
         }
     }
 else:
-    DATABASES = {
+    if os.getenv('STAFF_DB', '').startswith('production'):
+        DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'HOST': '2001:4860:4864:1:1a57:5b77:a8bd:815f',
+            'NAME': production_db_name,
+            'USER': production_db_user,
+            'PASSWORD': production_db_password,
+            }
+        }
+    else:    
+        DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
             'HOST': 'localhost',

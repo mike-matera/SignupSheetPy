@@ -101,12 +101,11 @@ def signup(request, pk, template_name='signup/signup.html'):
                                   )
                     v.save()
                     
-                    volcount = Volunteer.objects.filter(source__exact=job.source.pk, title__exact=job.title, start__exact=job.start).count()
-                    if volcount > job.needs :
-                        raise IntegrityError("fuck! nabbed!")
-                         
                     # Now check if there are too many volunteers. This has to 
                     # be done atomically. If we're overbooked, rollback. 
+                    volcount = Volunteer.objects.filter(source__exact=job.source.pk, title__exact=job.title, start__exact=job.start).count()
+                    if volcount > job.needs :
+                        raise IntegrityError("fuck! nabbed!")                         
                     
             except IntegrityError:
                 return render(request, 'signup/nabbed.html', {'ret':job.source.pk}, status=401)
@@ -119,7 +118,7 @@ def signup(request, pk, template_name='signup/signup.html'):
             
     else:
         ## Pre-fill the form with the user's name (They don't have to use it.)
-        form = SignupForm({'name': request.user})
+        form = SignupForm({'name': request.user.first_name + " " + request.user.last_name})
         return render(request, template_name, {'form':form, 'ret':job.source.pk, 'job':job})
 
 def delete(request, pk, template_name='signup/confirmdelete.html'):

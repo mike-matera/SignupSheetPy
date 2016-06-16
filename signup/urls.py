@@ -1,18 +1,20 @@
-from django.conf.urls import url
+from django.conf.urls import include, url
 
 from signup.source import source_list, source_create, source_update, source_delete, source_all
 from views import default, signup, delete, jobs
-from registration import register
+from registration import register, user
 
 urlpatterns = [
     url(r'^$', default, name='default'),
-    url(r'^jobs/(?P<title>[a-zA-Z0-9\-_ ]+)$', jobs, name='jobs'),
+    url(r'^jobs/(?P<title>[a-zA-Z0-9\-_ .]+)$', jobs, name='jobs'),
     url(r'^signup/(?P<pk>\d+)$', signup, name='signup'),
     url(r'^delete/(?P<pk>\d+)$', delete, name='delete'),
     url(r'^source/$', source_list, name='source_list'),
     url(r'^source/cr$', source_create, name='source_create'),
-    url(r'^source/u/(?P<pk>[a-zA-Z0-9\-_ ]+)$', source_update, name='source_update'),
-    url(r'^source/d/(?P<pk>[a-zA-Z0-9\-_ ]+)$', source_delete, name='source_delete'),
+    url(r'^source/u/(?P<pk>[a-zA-Z0-9\-_ .]+)$', source_update, name='source_update'),
+    url(r'^source/d/(?P<pk>[a-zA-Z0-9\-_ .]+)$', source_delete, name='source_delete'),
     url(r'^source/a$', source_all, name='source_all'),
     url(r'^register/$', register, name='register'),
+    url(r'^user/$', user, name='user'),
+    url('^', include('django.contrib.auth.urls')),
 ]
