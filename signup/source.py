@@ -17,15 +17,14 @@ from schema import build, build_all, ReportedException
 
 from django.core.cache import cache
 
-class SkipperForm(ModelForm):
-    class Meta:
-        model = Source
-        fields = ['title', 'text']
-        
+class SkipperForm(forms.Form):
+    title = forms.CharField(label='title')
+    text = forms.CharField(label='text', widget=forms.Textarea({'cols': '80', 'rows': '30'}))
+    
     def clean(self):
-        super(ModelForm, self).clean()
+        super(SkipperForm, self).clean()
         try: 
-            build(sourcetext=self.cleaned_data.get('text'), test_parse=True) 
+            build(user=None, sourcetext=self.cleaned_data.get('text'), test_parse=True) 
         except ReportedException as e :
             raise ValidationError(
                 _('Error: %(value)s'),
@@ -33,7 +32,7 @@ class SkipperForm(ModelForm):
             )
 
 class BulkSourceForm(forms.Form):
-    text = forms.CharField(label='text', widget=forms.Textarea({'cols': '80', 'rows': '40'}))
+    text = forms.CharField(label='text', widget=forms.Textarea({'cols': '80', 'rows': '30'}))
     def clean(self):
         super(BulkSourceForm, self).clean()
         try: 
@@ -44,7 +43,7 @@ class BulkSourceForm(forms.Form):
                 params={'value': e.message},
             )
 
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test(lambda u: u.is_staff)
 def source_list(request, template_name='source/source_list.html'):
     sources = Source.objects.order_by('title')
     data = {}
@@ -52,53 +51,73 @@ def source_list(request, template_name='source/source_list.html'):
     
     return render(request, template_name, data)
 
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test(lambda u: u.is_staff)
 def source_create(request, template_name='source/source_form.html'):
-    form = SkipperForm(request.POST or None)
-    if form.is_valid():
-        source = form.save(commit=False)
-        source.owner = request.user.username
-        source.save()
+    if request.method == 'POST' :
+        form = SkipperForm(request.POST)
+        if form.is_valid():
+            source = Source()
+            source.text = form.cleaned_data['text']
+            source.title = form.cleaned_data['title']
+            source.owner = request.user.username
+            source.save()
         
-        # Now build it.
-        build(sourceobj=source)
+            # Now build it.
+            build(user=request.user.username, sourceobj=source)
 
-        # Make sure cached pages update
-        cache.clear()                
-        return redirect('source_list')
-    return render(request, template_name, {'form':form})
+            # Make sure cached pages update
+            cache.clear()                
+            return redirect('source_list')
+        else:
+            return render(request, template_name, {'form':form})            
+    else:
+        default = '''
+coordinator "Name" "Email" "Url"
 
-@user_passes_test(lambda u: u.is_superuser)
+description {
+}
+    ''' 
+        form = SkipperForm( {'text': default, 'title': 'New Role'} )    
+        return render(request, template_name, {'form':form})
+
+@user_passes_test(lambda u: u.is_staff)
 def source_update(request, pk, template_name='source/source_form.html'):    
     source = Source.objects.get(title=pk)
     if source == None :
         raise Http404("Source does not exist")
 
-    form = SkipperForm(request.POST or None, instance=source)
-    if form.is_valid():
+    if request.method=='POST':
+        form = SkipperForm(request.POST)
+        if form.is_valid():
         
-        try: 
-            with transaction.atomic() :
-                # There is no update, sources must be deleted and remade.
-                # on_delete=CASCADE is emulated, but it works when my objects don't suck. 
-                source.delete()
+            try: 
+                with transaction.atomic() :
+                    # There is no update, sources must be deleted and remade.
+                    # on_delete=CASCADE is emulated, but it works when my objects don't suck. 
+                    source.delete()
 
-                # Create a new one 
-                source = form.save(commit=False)
-                source.title = pk
-                source.owner = request.user.username
-                source.save()
+                    # Create a new one 
+                    source = Source()
+                    source.title = pk
+                    source.text = form.cleaned_data['text']
+                    source.owner = request.user.username
+                    source.save()
         
-                # Now build it.
-                build(sourceobj=source)
-        except IntegrityError as e:
-            print "Transaction error:", e
+                    # Now build it.
+                    build(user=request.user.username, sourceobj=source)
+            except IntegrityError as e:
+                print "Transaction error:", e
         
-        cache.clear()                
-        return redirect('source_list')
-    return render(request, template_name, {'form':form})
+            cache.clear()                
+            return redirect('source_list')
+        else:
+            return render(request, template_name, {'title': pk, 'form':form})
 
-@user_passes_test(lambda u: u.is_superuser)
+    else:
+        form = SkipperForm({'text': source.text, 'title': source.title})
+        return render(request, template_name, {'title': pk, 'form':form})
+
+@user_passes_test(lambda u: u.is_staff)
 def source_delete(request, pk, template_name='source/confirm_delete.html'):
     source = Source.objects.get(title=pk)
     if source == None :
@@ -112,7 +131,7 @@ def source_delete(request, pk, template_name='source/confirm_delete.html'):
     return render(request, template_name, {'object':source})
 
 
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test(lambda u: u.is_staff)
 def source_all(request, template_name='source/source_bulkedit.html'):
     
     if request.method=='POST':
@@ -124,7 +143,7 @@ def source_all(request, template_name='source/source_bulkedit.html'):
                     Source.objects.all().delete()
         
                     # Now build it.
-                    build_all(form.cleaned_data['text'])
+                    build_all(form.cleaned_data['text'], request.user.username)
             except IntegrityError as e:
                 print "Transaction error:", e
 

@@ -7,74 +7,86 @@
 
 {% block content %}
 	{% cache 600 jobpage user.username source.title %}
-	<section>
-	<div class="sitemenu">
-	<ul>
-	{% for s in sources %} 
-	  	<li><a href="{% url "jobs" title=s.pk %}">{{s.pk}}</a></li>
-	{% endfor %}
-	</ul>
-  	</div>
-
-	<div class="jobselect">
-	<div class="roleheader">
-	<h1>{{ source.title }}</h1>
-	<div class="coordinators">
-
-		<div class="coordinator-pics">
-		{% for coordinator in coordinators %}
-  		  <img src="{{coordinator.url}}"></img>
-		{% endfor %}	
-
-		</div>
-		<div class="coordinator-names">
-		{% for coordinator in coordinators %}
-  		  <span class="coordinator-name">{{ coordinator.name }}</span>
-		{% endfor %}		
-		</div>
-		
-	</div>
-	<div class="roledescription">
-		{{ role.description | safe }}
-	</div>
-	<div class="jobslist">
-	{% for job in jobs %} 
-		<div class="job">
-
-		<h3>{{ job.job.title }}</h3>
-		<span class="jobtimes">{{ job.job.start | date:"l P" }} to {{ job.job.end | date:"l P" }}</span>
-		<span class="jobdescription">{{ job.job.description }}</span>
-		<p>Volunteers:</p>
-		<div class="jobpeople">
-
-		{% for volunteer in job.volunteers %} 
-			<span class="jobperson">
-			{{ volunteer.volunteer.name | title}} 
-			{% if volunteer.volunteer.comment != "" %}
-				-- "{{ volunteer.volunteer.comment }}"
-			{% endif %}
-			{% if volunteer.can_delete != None %}
-				<a href='javascript:void(0)' onclick='popup_click("{% url "delete" pk=volunteer.can_delete %}");'>(delete)</a>
-			{% endif %}
-			</span>
-		{% endfor %}
-
-
-		{% if job.can_signup > 0 and user.is_authenticated %}	
-			<a href='javascript:void(0)' onclick='popup_click("{% url "signup" pk=job.job.pk %}");'>		
-			<span class="jobneeds">(needs {{ job.can_signup }} more)</span>
-			</a>
-		{% endif %}
-		
-		</div>
-
-		</div>
-	{% endfor %}
-	</div>
-	</section>
-
-	{% include "popupform.html" %}	
 	
+	<div class="row">
+	<div class="col-md-3">
+		<ul class="list-group">
+		{% for s in sources %} 
+		  	<li class="list-group-item"><a href="{% url "jobs" title=s.pk %}">{{s.pk}}</a></li>
+		{% endfor %}
+		</ul>
+	</div>
+
+	<div class="col-md-9">	
+
+		<div class="roleheader">
+			<h1>{{ source.title }}</h1>
+
+			<h3>Coordinators</h3>
+			<div class="coordinators">
+				<div class="coordinator-pics">
+					{% for coordinator in coordinators %}
+  					  <img src="{{coordinator.url}}"></img>
+					{% endfor %}	
+				</div>
+				<div class="coordinator-names">
+				{% for coordinator in coordinators %}
+  				  	{{ coordinator.name }}{% if not forloop.last %}, {%endif%} 
+				{% endfor %}		
+				</div>
+			</div>
+
+			<h3>Description</h3>
+			<div class="roledescription">
+				{{ role.description | safe }}
+			</div>
+			
+		</div>
+		
+		<div class="jobslist">
+		{% for job in jobs %} 
+			<h3>{{ job.job.title }}</h3>
+			<div class="job">
+				<span class="jobtimes">{{ job.job.start | date:"l P" }} to {{ job.job.end | date:"l P" }}</span>
+				<span class="jobdescription">{{ job.job.description }}</span>
+
+				<div class="jobpeople">
+					{% if job.job.protected %}
+						<i>Please contact the coordinator to sign up for this job.</i>
+					{% endif %}
+					<table class="table table-striped">
+					{% for volunteer in job.volunteers %} 
+						<tr>
+						<td>{{ forloop.counter }}</td>
+						<td>
+						{% if volunteer.volunteer != None %}
+							{{ volunteer.volunteer.name | title}} 
+							{% if volunteer.volunteer.comment != "" %}
+								<span class="volunteercomment">{{ volunteer.volunteer.comment }}</span>
+							{% endif %}
+							{% if volunteer.can_delete != None %}
+								<a href='javascript:void(0)' onclick='popup_click("{% url "delete" pk=volunteer.can_delete %}");'>(delete)</a>
+							{% endif %}
+						{% endif %}							
+						</td>
+						</tr>
+					{% endfor %}
+					</table>
+								
+					{% if job.can_signup %}	
+						<a href='javascript:void(0)' onclick='popup_click("{% url "signup" pk=job.job.pk %}");'>		
+						<span class="jobneeds">Signup now!</span>
+						</a>
+					{% endif %}					
+				</div>
+
+			</div>		
+		{% endfor %}
+		</div>
+		
+	</div> <!-- end of the selection column -->
+
+	{% include "popupform.html" %}		
 	{% endcache %}
 {% endblock %}
 

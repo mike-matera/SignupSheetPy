@@ -2,20 +2,29 @@
 
 {% block title %}User Preferences{% endblock %}
 
+{% block sitenav %}
+{% include 'sitenav.html' %}
+{% endblock %}
+
 {% block content %}
-  <h1>You Are Signed Up For...</h1>
-  <div class="jobslist">
-  
-  {% for signup in signups %}
-		<div class="job">
-		<h3>{{ signup.source }} : {{ signup.title }}</h3>
-		<span class="jobtimes">{{ signup.start | date:"l P" }} to {{ signup.end | date:"l P" }}</span>
-		<a href='javascript:void(0)' onclick='popup_click("{% url "delete" pk=signup.pk %}");'>(delete)</a>
-		</div>
-  {% empty %}
-  <h3>Nothing! Get on it, yo!</h3>
+<h1>Your Signups</h1>
+<table class="table table-striped">
+<tr>
+<th>Who</th>
+<th>What</th>
+<th>When</th>
+<th>Actions</th>
+</tr>    
+{% for signup in signups %}
+ 	<tr>
+ 		<td>{{ signup.name }}</td>
+		<td>{{ signup.source }} : {{ signup.title }}</td>
+		<td>{{ signup.start | date:"l P" }} to {{ signup.end | date:"l P" }}</td>
+		<td><a href='javascript:void(0)' onclick='popup_click("{% url "delete" pk=signup.pk %}");'>Delete</a></td>
+	</tr>
   {% endfor %}
-  </div>
+</table>
+  
   <h1>Update your Name:</h1>
   <form action="" method="post">
 {% csrf_token %}

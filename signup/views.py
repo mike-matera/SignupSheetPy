@@ -12,7 +12,9 @@ from django.shortcuts import render, redirect
 
 from django.views.decorators.cache import cache_page
 from django.core.cache import cache
-from django.db.transaction import rollback
+from django.http.response import HttpResponseForbidden
+from django.contrib.auth.decorators import login_required
+
 
 class SignupForm(forms.Form):
     name = forms.CharField(label='Name')
@@ -56,14 +58,30 @@ def jobs(request, title):
         for volunteer in Volunteer.objects.filter(source__exact=job.source.pk, title__exact=job.title, start__exact=job.start) :
             vol = {}
             vol['volunteer'] = volunteer
-            if request.user == volunteer.user :
+            if request.user == volunteer.user or request.user.is_staff :
                 vol['can_delete'] = volunteer.id
             else:
                 vol['can_delete'] = None
                 
             entry['volunteers'].append(vol)
-        entry['can_signup'] =  job.needs - len(entry['volunteers'])
+                    
+        # create "empty" volunteers so that rendering shows holes...
+        needed = job.needs - len(entry['volunteers'])
+        for x in xrange(0, needed) :
+            vol = {}
+            vol['volunteer'] = None
+            vol['can_delete'] = None 
+            entry['volunteers'].append(vol)
         
+        # Determine if the user is able to signup
+        entry['can_signup'] = False
+        if needed > 0 and request.user.is_authenticated() :
+            if job.protected :
+                if request.user.is_staff :
+                    entry['can_signup'] = True
+            else:
+                    entry['can_signup'] = True
+                
         jobstaff.append(entry)
     
     template_values = {
@@ -77,11 +95,16 @@ def jobs(request, title):
     }
     return render_to_response('signup/jobpage.html', context=template_values)
 
+@login_required
 def signup(request, pk, template_name='signup/signup.html'):
     job = Job.objects.get(pk=pk)
     if job == None :
         raise Http404("Job does not exist")
 
+    # Check perimssions 
+    #if job.protected and not request.user.is_staff :
+    #    raise HttpResponseForbidden
+    
     if request.method=='POST':
         form = SignupForm(request.POST)
         if form.is_valid() :         
@@ -100,6 +123,20 @@ def signup(request, pk, template_name='signup/signup.html'):
                                   start = job.start,
                                   end = job.end,
                                   )
+
+                    # NB: This feature requires discussion: Doing this will make it 
+                    # impossible for people to sign up their friends for shifts.
+                    #
+                    # Before we commit this to the database let's check to see if the 
+                    # user is already signed up for a shift at this time...
+                    #shifts = Volunteer.objects.filter(user__exact=request.user)
+                    #for s in shifts : 
+                    #    if s.start == v.start \
+                    #        or ( v.start < s.start and s.end < v.end ) \
+                    #        or ( v.start > s.start and v.start < s.end ) :
+                    #        raise ValueError("Overlap!")
+
+                    # Now add the row, so the count query works...
                     v.save()
                     
                     # Now check if there are too many volunteers. This has to 
@@ -108,8 +145,12 @@ def signup(request, pk, template_name='signup/signup.html'):
                     if volcount > job.needs :
                         raise IntegrityError("fuck! nabbed!")                         
                     
+                    
             except IntegrityError:
-                return render(request, 'signup/nabbed.html', {'ret':job.source.pk}, status=401)
+                return HttpResponse('Oh no! This signup was nabbed!', status=450)
+
+            except ValueError:
+                return HttpResponse('Wait a second!', status=451)
                 
             cache.clear()
             return redirect('jobs', job.source.pk)
@@ -122,10 +163,15 @@ def signup(request, pk, template_name='signup/signup.html'):
         form = SignupForm({'name': request.user.first_name + " " + request.user.last_name})
         return render(request, template_name, {'form':form, 'ret':job.source.pk, 'job':job})
 
+@login_required
 def delete(request, pk, template_name='signup/confirmdelete.html'):
     volunteer = Volunteer.objects.get(pk=pk)
     if volunteer == None :
         raise Http404("Volunteer does not exist")
+
+    # Check perimssions 
+    #if request.user.pk != volunteer.pk and not request.user.is_staff :
+    #    raise HttpResponseForbidden
 
     if request.method=='POST':
         volunteer.delete()

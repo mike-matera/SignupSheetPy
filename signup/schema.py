@@ -15,10 +15,11 @@ class SchemaBuilder(StaffSheetListener) :
     
     epoch = datetime.strptime('07/28/2016 00:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
         
-    def __init__(self, source=None):
+    def __init__(self, user, source=None):
         self.rows = []
         self.stack = []
         self.context = []
+        self.user = user
         if source is not None :
             self.context.append(source)
 
@@ -30,7 +31,7 @@ class SchemaBuilder(StaffSheetListener) :
         stop = ctx.getChild(3).stop.stop
         text = inputstream.getText(start, stop)
         
-        src = Source(title=title, text=text) 
+        src = Source(title=title, text=text, owner=self.user) 
         src.save()
         self.context.append(src)
 
@@ -215,7 +216,7 @@ def __setup_parser(parse_input):
 
     return parser
     
-def build(sourceobj=None, sourcetext=None, test_parse=False):
+def build(user, sourceobj=None, sourcetext=None, test_parse=False):
     
     if sourceobj is not None :
         stream = InputStream(sourceobj.text)
@@ -228,15 +229,15 @@ def build(sourceobj=None, sourcetext=None, test_parse=False):
     tree = parser.rolefragment()
 
     if not test_parse :
-        builder = SchemaBuilder(sourceobj)
+        builder = SchemaBuilder(user=user, source=sourceobj)
         ParseTreeWalker.DEFAULT.walk(builder, tree)
 
-def build_all(text, test_parse=False):
+def build_all(text, user=None, test_parse=False):
 
     stream = InputStream(text)
     parser = __setup_parser(stream)
     tree = parser.sheet()
 
     if not test_parse :
-        builder = SchemaBuilder()
+        builder = SchemaBuilder(user)
         ParseTreeWalker.DEFAULT.walk(builder, tree)

@@ -12,16 +12,16 @@ from datetime import datetime
 # Create your models here.
 class Source(models.Model):
     '''This is the source code used to generate the staff sheet'''
-    title = CharField("Coordinator Role Name", max_length=32, primary_key=True)
+    title = CharField("Coordinator Role Name", max_length=64, primary_key=True)
     text = TextField(default='''
-coordinator "Name" "email@email.com" "http://picture.com/picture.jpg"
+coordinator "Name" "" ""
 
 description {
 }
     ''');
     version = DateTimeField("Changed On", auto_now_add=True)
     owner = CharField("Changed By", 
-        max_length=32
+        max_length=64
     )
 
 class Role(models.Model):
@@ -37,14 +37,14 @@ class Role(models.Model):
 class Coordinator(models.Model):
     '''A coordinator in one role.''' 
     source = ForeignKey(Source, on_delete=models.CASCADE)
-    name = CharField(max_length=32)
+    name = CharField(max_length=64)
     email = EmailField()
     url = URLField()
 
 class Job(models.Model):
     '''An individual job''' 
     source = ForeignKey(Source, on_delete=models.CASCADE)
-    title = CharField(max_length=32)
+    title = CharField(max_length=64)
     start = DateTimeField() 
     end = DateTimeField()
     description = TextField()
@@ -65,14 +65,14 @@ class Volunteer(models.Model):
     user = ForeignKey(User)
     
     # The natural key of Job 
-    source = CharField(max_length=32)
-    title = CharField(max_length=32)
+    source = CharField(max_length=64)
+    title = CharField(max_length=64)
     start = DateTimeField()
     
     # Not used in the join, just so that overlaps can be detected
     end = DateTimeField(default=datetime.now)
     # --- 
     
-    name = CharField(max_length=32)
+    name = CharField(max_length=64)
     comment = TextField()
     
