@@ -98,6 +98,7 @@ def signup(request, pk, template_name='signup/signup.html'):
                                   source = job.source.pk,
                                   title = job.title, 
                                   start = job.start,
+                                  end = job.end,
                                   )
                     v.save()
                     

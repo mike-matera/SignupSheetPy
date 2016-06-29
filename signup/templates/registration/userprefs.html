@@ -9,7 +9,7 @@
   {% for signup in signups %}
 		<div class="job">
 		<h3>{{ signup.source }} : {{ signup.title }}</h3>
-		<span class="jobtimes">{{ signup.start | date:"l P" }}</span>
+		<span class="jobtimes">{{ signup.start | date:"l P" }} to {{ signup.end | date:"l P" }}</span>
 		<a href='javascript:void(0)' onclick='popup_click("{% url "delete" pk=signup.pk %}");'>(delete)</a>
 		</div>
   {% empty %}

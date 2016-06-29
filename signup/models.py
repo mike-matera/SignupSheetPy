@@ -6,6 +6,7 @@ from django.db.models import ForeignKey
 from django.db.models.fields import (
     TextField, CharField, EmailField, URLField, DateTimeField, IntegerField, BooleanField
 )
+from datetime import datetime
 
 
 # Create your models here.
@@ -67,6 +68,9 @@ class Volunteer(models.Model):
     source = CharField(max_length=32)
     title = CharField(max_length=32)
     start = DateTimeField()
+    
+    # Not used in the join, just so that overlaps can be detected
+    end = DateTimeField(default=datetime.now)
     # --- 
     
     name = CharField(max_length=32)
