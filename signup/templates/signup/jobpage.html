@@ -78,9 +78,11 @@
 					</table>
 								
 					{% if job.can_signup %}	
-						<a href='javascript:void(0)' onclick='popup_click("{% url "signup" pk=job.job.pk %}");'>		
+<!--						<a href='javascript:void(0)' onclick='popup_click("{% url "signup" pk=job.job.pk %}");'>		
 						<span class="jobneeds">Signup now!</span>
 						</a>
+-->
+						<button onclick='popup_click("{% url "signup" pk=job.job.pk %}");'>Signup</button>
 					{% endif %}					
 				</div>
 
