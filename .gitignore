@@ -25,3 +25,7 @@
 # Temorarily while I get the DB ready 
 /signup/migrations
 /static
+
+# Ignore some of my helper stuff
+/upload.sh
+
