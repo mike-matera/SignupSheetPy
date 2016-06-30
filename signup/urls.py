@@ -1,7 +1,7 @@
 from django.conf.urls import include, url
 
 from signup.source import source_list, source_create, source_update, source_delete, source_all
-from views import default, signup, delete, jobs, email_list, download_csv
+from views import default, signup, delete, jobs, email_list, download_csv, eald_csv
 from registration import register, user
 
 urlpatterns = [
@@ -18,5 +18,6 @@ urlpatterns = [
     url(r'^user/$', user, name='user'),
     url(r'^email/(?P<role>[a-zA-Z0-9\-_ .]+)$', email_list, name='email_list'),
     url(r'^csv/$', download_csv, name='download_csv'),
+    url(r'^eald/$', eald_csv, name='eald_csv'),
     url('^', include('django.contrib.auth.urls')),
 ]

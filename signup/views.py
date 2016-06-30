@@ -1,6 +1,6 @@
 import textwrap
 import csv
-
+from datetime import datetime
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django import forms 
@@ -13,10 +13,10 @@ from django.shortcuts import render, redirect
 
 from django.views.decorators.cache import cache_page
 from django.core.cache import cache
-from django.http.response import HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 class SignupForm(forms.Form):
     name = forms.CharField(label='Name')
@@ -49,14 +49,13 @@ def jobs(request, title):
     source = Source.objects.filter(title__exact=title)
     role = Role.objects.filter(source__exact=source[0])[0]
     coordinators = Coordinator.objects.filter(source__exact=source[0])
-    jobs = Job.objects.filter(source__exact=source[0]).order_by('start')
     
     total_staff = 0;
     needed_staff = 0;
     
     # Now find the people that are signed up
     jobstaff = []
-    for job in jobs :
+    for job in Job.objects.filter(source__exact=source[0]).order_by('start') :
         entry = {}
         entry['job'] = job
         entry['volunteers'] = []
@@ -72,7 +71,7 @@ def jobs(request, title):
                     
         # create "empty" volunteers so that rendering shows holes...
         needed = job.needs - len(entry['volunteers'])
-        for x in xrange(0, needed) :
+        for _ in xrange(0, needed) :
             vol = {}
             vol['volunteer'] = None
             vol['can_delete'] = None 
@@ -212,21 +211,65 @@ def download_csv(request):
     writer.writerow(["Role", "Job", "Start Time", "End Time", "Person"])
     total = 0
     taken = 0;
-    for s in Source.objects.all() : 
-        for j in Job.objects.filter(source__exact=s.pk) :
-            cnt = 0
-            for v in Volunteer.objects.filter(source__exact=s.title, title__exact=j.title, start__exact=j.start) :                
-                writer.writerow([s.title, j.title, j.start, j.end, v.name])
-                cnt += 1
+    
+    for j in Job.objects.order_by('source_id') :
+        cnt = 0
+        for v in Volunteer.objects.filter(source__exact=j.source.pk, title__exact=j.title, start__exact=j.start) :                
+            writer.writerow([j.source.pk, j.title, j.start, j.end, v.name])
+            cnt += 1
             
-            for _ in xrange(0, j.needs - cnt) :
-                writer.writerow([s.title, j.title, j.start, j.end, ""])
+        for _ in xrange(0, j.needs - cnt) :
+            writer.writerow([j.source.pk, j.title, j.start, j.end, ""])
 
-            total += j.needs
-            taken += cnt
+        total += j.needs
+        taken += cnt
 
 
     writer.writerow([])
     writer.writerow(['Total staff', total])
     writer.writerow(['Jobs unfilled', total-taken])
+    return response
+
+@user_passes_test(lambda u: u.is_staff)
+def eald_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="EA_LD.csv"'
+    writer = csv.writer(response)
+    writer.writerow(["Early/Late", "Role", "Job", "Start Time", "End Time", "Person"])
+    
+    # testing
+    ea_thresh = datetime.strptime('07/29/2016 13:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
+    ld_thresh = datetime.strptime('07/31/2016 12:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
+
+    ea_total = 0 
+    ea_filled = 0 
+    ld_total = 0 
+    ld_filled = 0 
+        
+    for j in Job.objects.filter(Q(start__lte = ea_thresh) | Q(end__gte = ld_thresh)).order_by('source_id', 'start') :
+        cnt = 0
+       
+        if j.start <= ea_thresh : eald = "Early Arrival" 
+        else: eald = "Late Departure"
+
+        for v in Volunteer.objects.filter(source__exact=j.source, title__exact=j.title, start__exact=j.start) :                
+            writer.writerow([eald, j.source.pk, j.title, j.start, j.end, v.name])
+            cnt += 1
+            
+        for _ in xrange(0, j.needs - cnt) :
+            writer.writerow([eald, j.source.pk, j.title, j.start, j.end, ""])
+
+        if j.start <= ea_thresh : 
+            ea_total += j.needs
+            ea_filled += cnt
+        else: 
+            ld_total += j.needs
+            ld_filled += cnt
+
+    writer.writerow([])
+    writer.writerow(['Total Early Arrivals', ea_total])
+    writer.writerow(['Taken Early Arrivals', ea_filled])
+    writer.writerow(['Total Late Departures', ld_total])
+    writer.writerow(['Taken Late Departures', ld_filled])
+    
     return response
