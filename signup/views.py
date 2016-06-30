@@ -1,4 +1,5 @@
 import textwrap
+import csv
 
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
@@ -14,7 +15,8 @@ from django.views.decorators.cache import cache_page
 from django.core.cache import cache
 from django.http.response import HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
-
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.models import User
 
 class SignupForm(forms.Form):
     name = forms.CharField(label='Name')
@@ -49,6 +51,9 @@ def jobs(request, title):
     coordinators = Coordinator.objects.filter(source__exact=source[0])
     jobs = Job.objects.filter(source__exact=source[0]).order_by('start')
     
+    total_staff = 0;
+    needed_staff = 0;
+    
     # Now find the people that are signed up
     jobstaff = []
     for job in jobs :
@@ -81,9 +86,11 @@ def jobs(request, title):
                     entry['can_signup'] = True
             else:
                     entry['can_signup'] = True
-                
+            
         jobstaff.append(entry)
-    
+        total_staff += job.needs
+        needed_staff += needed 
+        
     template_values = {
         'sources': sources,
         'source': source[0],
@@ -92,6 +99,8 @@ def jobs(request, title):
         'jobs' : jobstaff,
         'next' : title,
         'user' : request.user,
+        'total' : total_staff, 
+        'needed' : needed_staff,
     }
     return render_to_response('signup/jobpage.html', context=template_values)
 
@@ -179,3 +188,45 @@ def delete(request, pk, template_name='signup/confirmdelete.html'):
         return redirect('jobs', volunteer.source)
     
     return render(request, template_name, {'object':volunteer, 'ret':volunteer.source})
+
+@user_passes_test(lambda u: u.is_staff)
+def email_list(request, role, template_name='misc/email_list.html'):
+    data = {}        
+    data['role'] = role;
+    temp = {}
+    for v in Volunteer.objects.filter(source__exact=role) :
+        person = User.objects.get(pk=v.user.pk)
+        temp[person.email] = person.first_name + " " + person.last_name
+
+    data['volunteers'] = []
+    for email,name in temp.items() :
+        data['volunteers'].append('"' + name + '" <' + email + ">")
+            
+    return render(request, template_name, {'data':data} )
+
+@user_passes_test(lambda u: u.is_staff)
+def download_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="StaffSheet.csv"'
+    writer = csv.writer(response)
+    writer.writerow(["Role", "Job", "Start Time", "End Time", "Person"])
+    total = 0
+    taken = 0;
+    for s in Source.objects.all() : 
+        for j in Job.objects.filter(source__exact=s.pk) :
+            cnt = 0
+            for v in Volunteer.objects.filter(source__exact=s.title, title__exact=j.title, start__exact=j.start) :                
+                writer.writerow([s.title, j.title, j.start, j.end, v.name])
+                cnt += 1
+            
+            for _ in xrange(0, j.needs - cnt) :
+                writer.writerow([s.title, j.title, j.start, j.end, ""])
+
+            total += j.needs
+            taken += cnt
+
+
+    writer.writerow([])
+    writer.writerow(['Total staff', total])
+    writer.writerow(['Jobs unfilled', total-taken])
+    return response
