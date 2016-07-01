@@ -15,8 +15,10 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from letsencrypt import challenge
 
 urlpatterns = [
     url(r'', include('signup.urls')),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^.well-known/acme-challenge/(?P<challenge>.+)$', challenge, name='letsencrypt') 
 ]

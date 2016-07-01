@@ -15,7 +15,7 @@ from secrets import (
     local_db_password, local_db_user, local_db_name, 
     production_db_password, production_db_user, production_db_name, 
     appengine_db_host, appengine_db_name, appengine_db_user,
-    secret_key
+    secret_key, appengine_authorized_sender
 )
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -163,3 +163,4 @@ STATIC_URL = '/static/'
 
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_BACKEND = 'signup.gae_email.GAEEmailBackend'
+GAE_EMAIL_SENDER = appengine_authorized_sender
