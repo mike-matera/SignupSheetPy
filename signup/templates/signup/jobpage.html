@@ -21,10 +21,19 @@
 
 		<div class="roleheader">
 			<h1>{{ source.title }}</h1>
-			{% if needed > 0 %}
-				<i>There are {{ needed }} shifts available of a total of {{ total }} needed.</i>
+			{% if enabled == 1 %} 
+				{% if needed > 0 %}
+					<i>There are {{ needed }} shifts available of a total of {{ total }} needed.</i>
+				{% else %}
+					<i>All {{total}} available shifts are taken!</i>
+				{% endif %}
 			{% else %}
-				<i>All {{total}} available shifts are taken!</i>
+				<span style='color: red;'>
+				<i>The staff sheet is not yet enabled for general signups.<br/>
+				If you're a coordinator you will be able to fill your protected jobs.<br/>
+				Otherwise please wait for an announcement indicating the general availability of the staff sheet.
+				</i>
+				</span>
 			{% endif %} 				
 			<h3>Coordinators</h3>
 			<div class="coordinators">

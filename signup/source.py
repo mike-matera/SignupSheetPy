@@ -7,7 +7,7 @@ from django.http import Http404
 from django.shortcuts import render, redirect
 from django.utils.translation import gettext_lazy as _
 
-from models import Source, Role, Coordinator, Job
+from models import Source, Role, Coordinator, Job, Global, global_signup_enable
 from parser.StaffSheetLexer import StaffSheetLexer
 from parser.StaffSheetListener import StaffSheetListener
 from parser.StaffSheetParser import StaffSheetParser
@@ -16,6 +16,7 @@ from django.db.utils import IntegrityError
 from schema import build, build_all, ReportedException
 
 from django.core.cache import cache
+from signup.models import set_global_signup_enable
 
 class SkipperForm(forms.Form):
     title = forms.CharField(label='title')
@@ -43,12 +44,14 @@ class BulkSourceForm(forms.Form):
                 params={'value': e.message},
             )
 
+class SourceLockForm(forms.Form):
+    lock = forms.IntegerField(label='Global Signup Enable', widget=forms.RadioSelect(choices=Global.CHOICES))
+    
 @user_passes_test(lambda u: u.is_staff)
 def source_list(request, template_name='source/source_list.html'):
-    sources = Source.objects.order_by('title')
     data = {}
-    data['object_list'] = sources
-    
+    data['object_list'] = Source.objects.order_by('title')
+    data['signup_enable'] = global_signup_enable()    
     return render(request, template_name, data)
 
 @user_passes_test(lambda u: u.is_staff)
@@ -117,7 +120,7 @@ def source_update(request, pk, template_name='source/source_form.html'):
         form = SkipperForm({'text': source.text, 'title': source.title})
         return render(request, template_name, {'title': pk, 'form':form})
 
-@user_passes_test(lambda u: u.is_staff)
+@user_passes_test(lambda u: u.is_superuser)
 def source_delete(request, pk, template_name='source/confirm_delete.html'):
     source = Source.objects.get(title=pk)
     if source == None :
@@ -131,7 +134,7 @@ def source_delete(request, pk, template_name='source/confirm_delete.html'):
     return render(request, template_name, {'object':source})
 
 
-@user_passes_test(lambda u: u.is_staff)
+@user_passes_test(lambda u: u.is_superuser)
 def source_all(request, template_name='source/source_bulkedit.html'):
     
     if request.method=='POST':
@@ -160,3 +163,17 @@ def source_all(request, template_name='source/source_bulkedit.html'):
         
         form = BulkSourceForm({'text': text})
         return render(request, template_name, {'form':form})
+
+@user_passes_test(lambda u: u.is_superuser)
+def source_lock(request, template_name='source/source_lockform.html') :
+
+    if request.method == 'POST' :
+        form = SourceLockForm(request.POST)
+        if form.is_valid() : 
+            set_global_signup_enable(form.cleaned_data['lock'])            
+            return redirect('source_list')
+        else:
+            return render(request, template_name, {'form': form})
+    else:
+        form = SourceLockForm({'lock': global_signup_enable()})
+        return render(request, template_name, {'form': form})

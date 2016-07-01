@@ -8,7 +8,7 @@ from django.http import Http404
 from django.db import transaction
 from django.db.utils import IntegrityError
 
-from models import Coordinator, Job, Role, Source, Volunteer
+from models import Coordinator, Job, Role, Source, Volunteer, Global, global_signup_enable
 from django.shortcuts import render, redirect
 
 from django.views.decorators.cache import cache_page
@@ -53,6 +53,8 @@ def jobs(request, title):
     total_staff = 0;
     needed_staff = 0;
     
+    enabled = global_signup_enable()
+    
     # Now find the people that are signed up
     jobstaff = []
     for job in Job.objects.filter(source__exact=source[0]).order_by('start') :
@@ -80,10 +82,15 @@ def jobs(request, title):
         # Determine if the user is able to signup
         entry['can_signup'] = False
         if needed > 0 and request.user.is_authenticated() :
-            if job.protected :
-                if request.user.is_staff :
-                    entry['can_signup'] = True
+            if enabled == Global.COORDINATOR_ONLY : 
+                # The job MUST be protected and the user must be staff.
+                if request.user.is_staff and job.protected :
+                    entry['can_signup'] = True                
             else:
+                if job.protected :
+                    if request.user.is_staff :
+                        entry['can_signup'] = True
+                else:
                     entry['can_signup'] = True
             
         jobstaff.append(entry)
@@ -100,6 +107,7 @@ def jobs(request, title):
         'user' : request.user,
         'total' : total_staff, 
         'needed' : needed_staff,
+        'enabled' : enabled,
     }
     return render_to_response('signup/jobpage.html', context=template_values)
 

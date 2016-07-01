@@ -7,9 +7,47 @@ from django.db.models.fields import (
     TextField, CharField, EmailField, URLField, DateTimeField, IntegerField, BooleanField
 )
 from datetime import datetime
+from django.core.cache import cache
+from django.db import transaction
 
+class Global(models.Model):
+    '''This model supports the public release feature of the staff sheet, there 
+    should only ever be one row in this table. If the user_enable field is false 
+    then only marked admin roles can be claimed. This way I can release the staff
+    sheet to coordinators with the permanent URL and not worry about leaks. Further,
+    even coordinators will not be able to pre-fill slots without having them marked
+    admin. This might cut down on cheating a bit.'''
+    
+    COORDINATOR_ONLY = 0 
+    AVAILABLE = 1
+    
+    CHOICES = (
+            (COORDINATOR_ONLY, 'Restricted: Only coordinators can fill shifts, and only protected shifts.'),
+            (AVAILABLE, 'Open access: Anyone can signup for shifts.'),
+    )
+    user_enable = IntegerField(choices=CHOICES, default=COORDINATOR_ONLY)
 
-# Create your models here.
+# Helpers for the global signup lock.
+def global_signup_enable():
+    gbs = Global.objects.all()
+    if len(gbs) == 0:
+        return 0
+    else:
+        return gbs[0].user_enable 
+
+def set_global_signup_enable(en):
+    gbs = Global.objects.all()
+    with transaction.atomic() :
+        if len(gbs) == 0:
+            setting = Global()
+            setting.user_enable = en
+            setting.save()
+        else:
+            gbs[0].user_enable = en
+            gbs[0].save()
+    
+    cache.clear()
+    
 class Source(models.Model):
     '''This is the source code used to generate the staff sheet'''
     title = CharField("Coordinator Role Name", max_length=64, primary_key=True)

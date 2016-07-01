@@ -6,9 +6,16 @@
 
 {% block content %}
 <h1>Coordinator Interface</h1>
+{% if signup_enable == 0 %}
+<span style='color: red;'><p><i>Signups are disabled, only protected jobs can be filled by coordinators at this time.</i></p></span>
+{% else %}
+<span style='color: green;'><p><i>Signups are enabled, anyone can sign up for a job on the staff sheet.</i></p></span>
+{% endif %}
+
 {% if user.is_superuser %}
 <a class="btn btn-default" href="{% url "source_create" %}">New Role</a>
 <a href="{% url "source_all" %}">Full Editor</a> | 
+<a href="{% url "source_lock" %}">Set Availability</a> | 
 {% endif %}
 <a href="{% url "download_csv" %}">Download CSV</a> | <a href="{% url "eald_csv" %}">EA/LD CSV</a> 
 <br/><br/>
