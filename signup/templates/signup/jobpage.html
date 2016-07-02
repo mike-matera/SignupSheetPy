@@ -10,15 +10,34 @@
 	
 	<div class="row">
 	<div class="col-md-3">
-		<ul class="list-group">
-		{% for s in sources %} 
-		  	<li class="list-group-item"><a href="{% url "jobs" title=s.pk %}">{{s.pk}}</a></li>
-		{% endfor %}
-		</ul>
+		<nav>
+			<!-- For mid-size and larger devices, render as a sidebar -->
+			<div class="visible-md-block visible-lg-block visible-xl-block">
+				<ul class="list-group">
+				{% for s in sources %} 
+				  	<li class="list-group-item"><a href="{% url "jobs" title=s.pk %}">{{s.pk}}</a></li>
+				{% endfor %}
+				</ul>
+			</div>
+			<!-- for phones small devices, render as a pulldown -->
+			<div class="visible-sm-block visible-xs-block">
+				<ul class="nav">
+					<li role="presentation" class="dropdown">
+						<a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+			      			Choose a Job<span class="caret"></span>
+	    				</a>
+						<ul class="dropdown-menu">
+						{% for s in sources %} 
+				  			<li class="list-group-item"><a href="{% url "jobs" title=s.pk %}">{{s.pk}}</a></li>
+						{% endfor %}
+						</ul>
+					</li>
+				</ul>
+			</div>
+		<nav>		
 	</div>
 
 	<div class="col-md-9">	
-
 		<div class="roleheader">
 			<h1>{{ source.title }}</h1>
 			{% if enabled == 1 %} 
