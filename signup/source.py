@@ -18,6 +18,8 @@ from schema import build, build_all, ReportedException
 from django.core.cache import cache
 from signup.models import set_global_signup_enable
 
+from access import is_coordinator, is_coordinator_of
+
 class SkipperForm(forms.Form):
     title = forms.CharField(label='title')
     text = forms.CharField(label='text', widget=forms.Textarea({'cols': '80', 'rows': '30'}))
@@ -47,14 +49,18 @@ class BulkSourceForm(forms.Form):
 class SourceLockForm(forms.Form):
     lock = forms.IntegerField(label='Global Signup Enable', widget=forms.RadioSelect(choices=Global.CHOICES))
     
-@user_passes_test(lambda u: u.is_staff)
+@user_passes_test(lambda u: is_coordinator(u))
 def source_list(request, template_name='source/source_list.html'):
     data = {}
-    data['object_list'] = Source.objects.order_by('title')
+    data['object_list'] = []
     data['signup_enable'] = global_signup_enable()    
+    for s in Source.objects.order_by('title') :
+        if is_coordinator_of(request.user, s) :
+            data['object_list'].append(s)
+
     return render(request, template_name, data)
 
-@user_passes_test(lambda u: u.is_staff)
+@user_passes_test(lambda u: is_coordinator(u))
 def source_create(request, template_name='source/source_form.html'):
     if request.method == 'POST' :
         form = SkipperForm(request.POST)
@@ -83,7 +89,7 @@ description {
         form = SkipperForm( {'text': default, 'title': 'New Role'} )    
         return render(request, template_name, {'form':form})
 
-@user_passes_test(lambda u: u.is_staff)
+@user_passes_test(lambda u: is_coordinator(u))
 def source_update(request, pk, template_name='source/source_form.html'):    
     source = Source.objects.get(title=pk)
     if source == None :

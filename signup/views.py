@@ -18,6 +18,8 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.db.models import Q
 
+from access import is_coordinator, can_signup, can_delete
+
 class SignupForm(forms.Form):
     name = forms.CharField(label='Name')
     comment = forms.CharField(label='Comment', required=False)
@@ -64,11 +66,11 @@ def jobs(request, title):
         for volunteer in Volunteer.objects.filter(source__exact=job.source.pk, title__exact=job.title, start__exact=job.start) :
             vol = {}
             vol['volunteer'] = volunteer
-            if request.user == volunteer.user or request.user.is_staff :
+            if can_delete(request.user, volunteer) :
                 vol['can_delete'] = volunteer.id
             else:
                 vol['can_delete'] = None
-                
+                                            
             entry['volunteers'].append(vol)
                     
         # create "empty" volunteers so that rendering shows holes...
@@ -80,18 +82,10 @@ def jobs(request, title):
             entry['volunteers'].append(vol)
         
         # Determine if the user is able to signup
-        entry['can_signup'] = False
-        if needed > 0 and request.user.is_authenticated() :
-            if enabled == Global.COORDINATOR_ONLY : 
-                # The job MUST be protected and the user must be staff.
-                if request.user.is_staff and job.protected :
-                    entry['can_signup'] = True                
-            else:
-                if job.protected :
-                    if request.user.is_staff :
-                        entry['can_signup'] = True
-                else:
-                    entry['can_signup'] = True
+        if needed > 0 :
+            entry['can_signup'] = can_signup(request.user, job)
+        else:
+            entry['can_signup'] = False
             
         jobstaff.append(entry)
         total_staff += job.needs
@@ -117,9 +111,7 @@ def signup(request, pk, template_name='signup/signup.html'):
     if job == None :
         raise Http404("Job does not exist")
 
-    # Check perimssions 
-    #if job.protected and not request.user.is_staff :
-    #    raise HttpResponseForbidden
+    # TODO: Check perimssions 
     
     if request.method=='POST':
         form = SignupForm(request.POST)
@@ -196,7 +188,7 @@ def delete(request, pk, template_name='signup/confirmdelete.html'):
     
     return render(request, template_name, {'object':volunteer, 'ret':volunteer.source})
 
-@user_passes_test(lambda u: u.is_staff)
+@user_passes_test(lambda u: is_coordinator(u))
 def email_list(request, role, template_name='misc/email_list.html'):
     data = {}        
     data['role'] = role;
@@ -211,23 +203,45 @@ def email_list(request, role, template_name='misc/email_list.html'):
             
     return render(request, template_name, {'data':data} )
 
-@user_passes_test(lambda u: u.is_staff)
+
+EA_THRESHOLD = datetime.strptime('07/29/2016 13:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
+LD_THRESHOLD = datetime.strptime('07/31/2016 16:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
+
+def is_ea(starttime):
+    return starttime <= EA_THRESHOLD
+
+def is_ld(endtime):
+    return endtime >= LD_THRESHOLD
+
+@user_passes_test(lambda u: is_coordinator(u))
 def download_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="StaffSheet.csv"'
     writer = csv.writer(response)
-    writer.writerow(["Role", "Job", "Start Time", "End Time", "Person"])
+    writer.writerow(["Role", "Protected", "EA/LD", "Job", "Start Time", "End Time", "Person"])
     total = 0
     taken = 0;
     
     for j in Job.objects.order_by('source_id') :
         cnt = 0
+        if j.protected : 
+            prot = "Yes"
+        else:
+            prot = "";
+        
+        eald=""    
+        if is_ea(j.start) :
+            eald = "Early Arrival"
+        
+        if is_ld(j.end) :
+            eald = "Late Departure"
+
         for v in Volunteer.objects.filter(source__exact=j.source.pk, title__exact=j.title, start__exact=j.start) :                
-            writer.writerow([j.source.pk, j.title, j.start, j.end, v.name])
+            writer.writerow([j.source.pk, prot, eald, j.title, j.start, j.end, v.name])
             cnt += 1
             
         for _ in xrange(0, j.needs - cnt) :
-            writer.writerow([j.source.pk, j.title, j.start, j.end, ""])
+            writer.writerow([j.source.pk, prot, eald, j.title, j.start, j.end, ""])
 
         total += j.needs
         taken += cnt
@@ -238,28 +252,27 @@ def download_csv(request):
     writer.writerow(['Jobs unfilled', total-taken])
     return response
 
-@user_passes_test(lambda u: u.is_staff)
+@user_passes_test(lambda u: is_coordinator(u))
 def eald_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="EA_LD.csv"'
     writer = csv.writer(response)
     writer.writerow(["Early/Late", "Role", "Job", "Start Time", "End Time", "Person"])
     
-    # testing
-    ea_thresh = datetime.strptime('07/29/2016 13:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
-    ld_thresh = datetime.strptime('07/31/2016 12:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
-
     ea_total = 0 
     ea_filled = 0 
     ld_total = 0 
     ld_filled = 0 
         
-    for j in Job.objects.filter(Q(start__lte = ea_thresh) | Q(end__gte = ld_thresh)).order_by('source_id', 'start') :
+    for j in Job.objects.filter(Q(start__lte = EA_THRESHOLD) | Q(end__gte = LD_THRESHOLD)).order_by('source_id', 'start') :
         cnt = 0
-       
-        if j.start <= ea_thresh : eald = "Early Arrival" 
-        else: eald = "Late Departure"
 
+        if is_ea(j.start) :
+            eald = "Early Arrival"
+        
+        if is_ld(j.end) :
+            eald = "Late Departure"
+            
         for v in Volunteer.objects.filter(source__exact=j.source, title__exact=j.title, start__exact=j.start) :                
             writer.writerow([eald, j.source.pk, j.title, j.start, j.end, v.name])
             cnt += 1
@@ -267,10 +280,11 @@ def eald_csv(request):
         for _ in xrange(0, j.needs - cnt) :
             writer.writerow([eald, j.source.pk, j.title, j.start, j.end, ""])
 
-        if j.start <= ea_thresh : 
+        if is_ea(j.start) :
             ea_total += j.needs
             ea_filled += cnt
-        else: 
+        
+        if is_ld(j.end) :
             ld_total += j.needs
             ld_filled += cnt
 

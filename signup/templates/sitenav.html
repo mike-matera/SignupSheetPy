@@ -1,4 +1,4 @@
-
+{% load coordinator %}
 <nav class="navbar navbar-default navbar-fixed-top">
 <div class="container">
 <div class="navbar-header">
@@ -9,7 +9,8 @@
 		<li class="active">
 			<a href="{% url "user" %}">{{ user.first_name | title }}</a>
 		</li>
-	{% if user.is_staff %}
+	{% is_coord as coordinator %}
+	{% if coordinator %}
 		<li class="active">
 			<a href="{% url "source_list" %}">Coordinator</a> 
 		</li>

@@ -71,7 +71,6 @@ class Role(models.Model):
     )
     description = TextField()
 
-# XXX: Fix me Coordinator and Job should have Source as their FK
 class Coordinator(models.Model):
     '''A coordinator in one role.''' 
     source = ForeignKey(Source, on_delete=models.CASCADE)

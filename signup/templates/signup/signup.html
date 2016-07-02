@@ -1,5 +1,3 @@
-{% load crispy_forms_tags %}
-
 <div id="modal-content">
 	<form method="post" action="{% url "signup" job.pk %}">
   	{% csrf_token %}
@@ -8,7 +6,7 @@
   	  <p>{{ job.start | date:"l P" }} to {{ job.end | date:"l P" }}
     </div>
     <div class="modal-body">
-  	  {{ form | crispy }} 
+  	  {{ form  }} 
     </div>
     <div class="modal-footer">
         <input type="submit" value="Signup" class="btn btn-primary"></input>
