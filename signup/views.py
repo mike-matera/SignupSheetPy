@@ -8,7 +8,7 @@ from django.http import Http404
 from django.db import transaction
 from django.db.utils import IntegrityError
 
-from models import Coordinator, Job, Role, Source, Volunteer, Global, global_signup_enable
+from models import Coordinator, Job, Role, Source, Volunteer, global_signup_enable
 from django.shortcuts import render, redirect
 
 from django.views.decorators.cache import cache_page
@@ -17,6 +17,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.conf import settings
 
 from access import is_coordinator, can_signup, can_delete
 
@@ -51,7 +52,13 @@ def jobs(request, title):
     source = Source.objects.filter(title__exact=title)
     role = Role.objects.filter(source__exact=source[0])[0]
     coordinators = Coordinator.objects.filter(source__exact=source[0])
-    
+    for c in coordinators : 
+        # Fill images... 
+        if c.url == "" : 
+            c.url = settings.COORDINATOR_DEFAULT_IMG
+        elif c.url[0:4] != "http" :
+            c.url = settings.COORDINATOR_STATIC_IMG_URL + c.url
+            
     total_staff = 0;
     needed_staff = 0;
     
