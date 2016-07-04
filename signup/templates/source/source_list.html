@@ -28,7 +28,7 @@
     {% for source in object_list %}
     <tr>
 	<td><a href="{% url "jobs" source.title %}">{{ source.title }}</a></td>
-	<td>{{ source.owner }}<br/>{{ source.version }} UTC</td>
+	<td>{{ source.owner }}<br/>{{ source.version }} PDT</td>
     <td>
     	<a href="{% url "source_update" source.title %}">Edit</a> 
     	{% if user.is_superuser %} |

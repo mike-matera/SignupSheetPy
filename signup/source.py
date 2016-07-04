@@ -19,6 +19,7 @@ from django.core.cache import cache
 from signup.models import set_global_signup_enable
 
 from access import is_coordinator, is_coordinator_of
+from datetime import timedelta
 
 class SkipperForm(forms.Form):
     title = forms.CharField(label='title')
@@ -55,6 +56,8 @@ def source_list(request, template_name='source/source_list.html'):
     data['object_list'] = []
     data['signup_enable'] = global_signup_enable()    
     for s in Source.objects.order_by('title') :
+        # Adjust the version date to PDT
+        s.version = s.version + timedelta(hours=-7)
         if is_coordinator_of(request.user, s) :
             data['object_list'].append(s)
 
@@ -68,11 +71,11 @@ def source_create(request, template_name='source/source_form.html'):
             source = Source()
             source.text = form.cleaned_data['text']
             source.title = form.cleaned_data['title']
-            source.owner = request.user.username
+            source.owner = request.user.first_name + ' ' + request.user.last_name
             source.save()
         
             # Now build it.
-            build(user=request.user.username, sourceobj=source)
+            build(user=request.user, sourceobj=source)
 
             # Make sure cached pages update
             cache.clear()                
@@ -109,11 +112,11 @@ def source_update(request, pk, template_name='source/source_form.html'):
                     source = Source()
                     source.title = pk
                     source.text = form.cleaned_data['text']
-                    source.owner = request.user.username
+                    source.owner = request.user.first_name + ' ' + request.user.last_name
                     source.save()
         
                     # Now build it.
-                    build(user=request.user.username, sourceobj=source)
+                    build(user=request.user, sourceobj=source)
             except IntegrityError as e:
                 print "Transaction error:", e
         
@@ -152,7 +155,7 @@ def source_all(request, template_name='source/source_bulkedit.html'):
                     Source.objects.all().delete()
         
                     # Now build it.
-                    build_all(form.cleaned_data['text'], request.user.username)
+                    build_all(form.cleaned_data['text'], request.user)
             except IntegrityError as e:
                 print "Transaction error:", e
 

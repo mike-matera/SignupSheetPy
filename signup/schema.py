@@ -10,7 +10,7 @@ from models import Source, Role, Coordinator, Job
 from parser.StaffSheetLexer import StaffSheetLexer
 from parser.StaffSheetListener import StaffSheetListener
 from parser.StaffSheetParser import StaffSheetParser
-
+    
 class SchemaBuilder(StaffSheetListener) :
     
     epoch = datetime.strptime('07/28/2016 00:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
@@ -31,16 +31,15 @@ class SchemaBuilder(StaffSheetListener) :
         stop = ctx.getChild(3).stop.stop
         text = inputstream.getText(start, stop)
         
-        src = Source(title=title, text=text, owner=self.user) 
+        src = Source(title=title, text=text, 
+                    owner=self.user.first_name + ' ' + self.user.last_name,
+                    ) 
         src.save()
         self.context.append(src)
 
     def exitRole(self, ctx):
         self.context.pop()
         
-#    def enterRolefragment(self, ctx): 
-#        self.context.append(ctx.sourceobj);
-            
     def exitRolefragment(self, ctx):
         role = Role()
         role.source = self.context[-1]
