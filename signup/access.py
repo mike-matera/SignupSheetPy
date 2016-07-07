@@ -1,5 +1,18 @@
 from models import Source, Coordinator, Global, global_signup_enable
 from argparse import ArgumentError
+from datetime import datetime 
+
+EA_THRESHOLD = datetime.strptime('07/29/2016 13:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
+LD_THRESHOLD = datetime.strptime('07/31/2016 16:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
+
+# Test if the job or volunteer model is an early arrival job.
+def is_ea(job):
+    return job.start <= EA_THRESHOLD
+
+# Test if the job or volunteer model is a late departure job.
+# This works because the fields in Job and Volunteer are similarly named.
+def is_ld(job):
+    return job.end >= LD_THRESHOLD
 
 # Test if the user has any form of administrative privileges
 # This is true for
@@ -36,7 +49,8 @@ def is_coordinator_of(user, source):
 # - Superusers are always able to signup for an available job (this is for testing) 
 #
 # If GSE is in the COORDINATOR_ONLY state: 
-#   - A coordinator can singup IFF the job is protected
+#   - A coordinator can singup if:
+#         the job is protected or is early arrival or is late departure
 #
 # If GSE is in the AVAILABLE state: 
 #   - If the job is protected a coordinator can signup
@@ -51,7 +65,7 @@ def can_signup(user, job):
     
     gse = global_signup_enable()
     if gse == Global.COORDINATOR_ONLY :
-        if job.protected and is_coordinator(user) :
+        if (job.protected or is_ea(job) or is_ld(job)) and is_coordinator(user) :
             return True
         else:
             return False

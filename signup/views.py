@@ -19,7 +19,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.conf import settings
 
-from access import is_coordinator, can_signup, can_delete
+from access import is_coordinator, can_signup, can_delete, is_ea, is_ld, EA_THRESHOLD, LD_THRESHOLD
 
 class SignupForm(forms.Form):
     name = forms.CharField(label='Name')
@@ -211,16 +211,8 @@ def email_list(request, role, template_name='misc/email_list.html'):
     return render(request, template_name, {'data':data} )
 
 
-EA_THRESHOLD = datetime.strptime('07/29/2016 13:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
-LD_THRESHOLD = datetime.strptime('07/31/2016 16:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
 DAYFORMAT = "%A"
 TIMEFORMAT = "%I:%M %p"
-
-def is_ea(starttime):
-    return starttime <= EA_THRESHOLD
-
-def is_ld(endtime):
-    return endtime >= LD_THRESHOLD
 
 @user_passes_test(lambda u: is_coordinator(u))
 def download_csv(request):
@@ -239,10 +231,10 @@ def download_csv(request):
             prot = "";
         
         eald=""    
-        if is_ea(j.start) :
+        if is_ea(j) :
             eald = "Early Arrival"
         
-        if is_ld(j.end) :
+        if is_ld(j) :
             eald = "Late Departure"
 
         for v in Volunteer.objects.filter(source__exact=j.source.pk, title__exact=j.title, start__exact=j.start) :                
@@ -276,10 +268,10 @@ def eald_csv(request):
     for j in Job.objects.filter(Q(start__lte = EA_THRESHOLD) | Q(end__gte = LD_THRESHOLD)).order_by('source_id', 'start') :
         cnt = 0
 
-        if is_ea(j.start) :
+        if is_ea(j) :
             eald = "Early Arrival"
         
-        if is_ld(j.end) :
+        if is_ld(j) :
             eald = "Late Departure"
             
         for v in Volunteer.objects.filter(source__exact=j.source, title__exact=j.title, start__exact=j.start) :                
@@ -289,11 +281,11 @@ def eald_csv(request):
         for _ in xrange(0, j.needs - cnt) :
             writer.writerow([eald, j.source.pk, j.title, j.start, j.end, ""])
 
-        if is_ea(j.start) :
+        if is_ea(j) :
             ea_total += j.needs
             ea_filled += cnt
         
-        if is_ld(j.end) :
+        if is_ld(j) :
             ld_total += j.needs
             ld_filled += cnt
 
