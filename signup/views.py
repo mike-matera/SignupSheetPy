@@ -213,7 +213,8 @@ def email_list(request, role, template_name='misc/email_list.html'):
 
 EA_THRESHOLD = datetime.strptime('07/29/2016 13:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
 LD_THRESHOLD = datetime.strptime('07/31/2016 16:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
-TIMEFORMAT = "%A %I:%M %p"
+DAYFORMAT = "%A"
+TIMEFORMAT = "%I:%M %p"
 
 def is_ea(starttime):
     return starttime <= EA_THRESHOLD
@@ -226,7 +227,7 @@ def download_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="StaffSheet.csv"'
     writer = csv.writer(response)
-    writer.writerow(["Role", "Protected", "EA/LD", "Job", "Start Time", "End Time", "Person"])
+    writer.writerow(["Role", "Protected", "EA/LD", "Job", "Start Day", "Start Time", "End Day", "End Time", "Person"])
     total = 0
     taken = 0;
     
@@ -245,11 +246,11 @@ def download_csv(request):
             eald = "Late Departure"
 
         for v in Volunteer.objects.filter(source__exact=j.source.pk, title__exact=j.title, start__exact=j.start) :                
-            writer.writerow([j.source.pk, prot, eald, j.title, j.start.strftime(TIMEFORMAT), j.end.strftime(TIMEFORMAT), v.name])
+            writer.writerow([j.source.pk, prot, eald, j.title, j.start.strftime(DAYFORMAT), j.start.strftime(TIMEFORMAT), j.end.strftime(DAYFORMAT), j.end.strftime(TIMEFORMAT), v.name])
             cnt += 1
             
         for _ in xrange(0, j.needs - cnt) :
-            writer.writerow([j.source.pk, prot, eald, j.title, j.start.strftime(TIMEFORMAT), j.end.strftime(TIMEFORMAT), ""])
+            writer.writerow([j.source.pk, prot, eald, j.title, j.start.strftime(DAYFORMAT), j.start.strftime(TIMEFORMAT), j.end.strftime(DAYFORMAT), j.end.strftime(TIMEFORMAT), ""])
 
         total += j.needs
         taken += cnt
