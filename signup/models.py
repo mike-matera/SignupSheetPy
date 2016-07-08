@@ -7,8 +7,6 @@ from django.db.models.fields import (
     TextField, CharField, EmailField, URLField, DateTimeField, IntegerField, BooleanField
 )
 from datetime import datetime
-from django.core.cache import cache
-from django.db import transaction
 
 class Global(models.Model):
     '''This model supports the public release feature of the staff sheet, there 
@@ -27,27 +25,6 @@ class Global(models.Model):
     )
     user_enable = IntegerField(choices=CHOICES, default=COORDINATOR_ONLY)
 
-# Helpers for the global signup lock.
-def global_signup_enable():
-    gbs = Global.objects.all()
-    if len(gbs) == 0:
-        return 0
-    else:
-        return gbs[0].user_enable 
-
-def set_global_signup_enable(en):
-    gbs = Global.objects.all()
-    with transaction.atomic() :
-        if len(gbs) == 0:
-            setting = Global()
-            setting.user_enable = en
-            setting.save()
-        else:
-            gbs[0].user_enable = en
-            gbs[0].save()
-    
-    cache.clear()
-    
 class Source(models.Model):
     '''This is the source code used to generate the staff sheet'''
     title = CharField("Coordinator Role Name", max_length=64, primary_key=True)
@@ -73,6 +50,7 @@ class Role(models.Model):
 
 class Coordinator(models.Model):
     '''A coordinator in one role.''' 
+
     source = ForeignKey(Source, on_delete=models.CASCADE)
     name = CharField(max_length=64)
     email = EmailField()
@@ -80,6 +58,7 @@ class Coordinator(models.Model):
 
 class Job(models.Model):
     '''An individual job''' 
+
     source = ForeignKey(Source, on_delete=models.CASCADE)
     title = CharField(max_length=64)
     start = DateTimeField() 
@@ -99,6 +78,10 @@ class Volunteer(models.Model):
     join, if it's too slow I can probably figure out how to use hashes as the PK
     for Volunteer and Job
     '''
+    
+    class Meta :
+        index_together = ['source', 'title', 'start']
+        
     user = ForeignKey(User)
     
     # The natural key of Job 

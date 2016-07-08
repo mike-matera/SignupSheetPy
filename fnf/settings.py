@@ -153,11 +153,11 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 
-#CACHES = {
-#    'default': {
-#        'BACKEND': 'fnf.backend.GaeMemcachedCache',
-#    }
-#}
+CACHES = {
+    'default': {
+        'BACKEND': 'fnf.backend.GaeMemcachedCache',
+    }
+}
 
 # CRISPY_TEMPLATE_PACK = 'bootstrap3'
 

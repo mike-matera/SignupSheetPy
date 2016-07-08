@@ -1,6 +1,5 @@
 import textwrap
 import csv
-from datetime import datetime
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django import forms 
@@ -8,18 +7,17 @@ from django.http import Http404
 from django.db import transaction
 from django.db.utils import IntegrityError
 
-from models import Coordinator, Job, Role, Source, Volunteer, global_signup_enable
+from models import Coordinator, Job, Role, Source, Volunteer
 from django.shortcuts import render, redirect
 
 from django.views.decorators.cache import cache_page
-from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.conf import settings
 
-from access import is_coordinator, can_signup, can_delete, is_ea, is_ld, EA_THRESHOLD, LD_THRESHOLD
+from access import is_coordinator, can_signup, can_delete, is_ea, is_ld, EA_THRESHOLD, LD_THRESHOLD, global_signup_enable
 
 class SignupForm(forms.Form):
     name = forms.CharField(label='Name')
@@ -49,9 +47,9 @@ def jobs(request, title):
     sources = Source.objects.all()
     
     # Fetch the role information 
-    source = Source.objects.filter(title__exact=title)
-    role = Role.objects.filter(source__exact=source[0])[0]
-    coordinators = Coordinator.objects.filter(source__exact=source[0])
+    source = Source.objects.get(pk=title)
+    role = Role.objects.filter(pk=source)[0]
+    coordinators = Coordinator.objects.filter(source__exact=source)
     for c in coordinators : 
         # Fill images... 
         if c.url == "" : 
@@ -66,7 +64,7 @@ def jobs(request, title):
     
     # Now find the people that are signed up
     jobstaff = []
-    for job in Job.objects.filter(source__exact=source[0]).order_by('start') :
+    for job in Job.objects.filter(source__exact=source).order_by('start') :
         entry = {}
         entry['job'] = job
         entry['volunteers'] = []
@@ -100,7 +98,7 @@ def jobs(request, title):
         
     template_values = {
         'sources': sources,
-        'source': source[0],
+        'source': source,
         'role': role,
         'coordinators' : coordinators,
         'jobs' : jobstaff,
@@ -167,7 +165,6 @@ def signup(request, pk, template_name='signup/signup.html'):
             except ValueError:
                 return HttpResponse('Wait a second!', status=451)
                 
-            cache.clear()
             return redirect('jobs', job.source.pk)
 
         else:
@@ -190,7 +187,6 @@ def delete(request, pk, template_name='signup/confirmdelete.html'):
 
     if request.method=='POST':
         volunteer.delete()
-        cache.clear()
         return redirect('jobs', volunteer.source)
     
     return render(request, template_name, {'object':volunteer, 'ret':volunteer.source})

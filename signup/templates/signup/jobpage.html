@@ -1,13 +1,10 @@
 {% extends 'base.html' %}
-{% load cache %}
 
 {% block sitenav %}
 {% include 'sitenav.html' %}
 {% endblock %}
 
-{% block content %}
-	{% cache 600 jobpage user.username source.title %}
-	
+{% block content %}	
 	<div class="row">
 	<div class="col-md-3">
 		<nav>
@@ -121,7 +118,6 @@
 	</div> <!-- end of the selection column -->
 
 	{% include "popupform.html" %}		
-	{% endcache %}
 {% endblock %}
 
 

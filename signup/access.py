@@ -1,9 +1,31 @@
-from models import Source, Coordinator, Global, global_signup_enable
+from models import Source, Coordinator, Global
 from argparse import ArgumentError
 from datetime import datetime 
+import functools 
+from django.core.cache import cache
+from django.db import transaction
 
 EA_THRESHOLD = datetime.strptime('07/29/2016 13:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
 LD_THRESHOLD = datetime.strptime('07/31/2016 16:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
+
+# Permissions caching... make these operations a bit less DB intensive. 
+#
+def memoize(func) : 
+    '''Store the permission lookup in memcache'''
+    
+    @functools.wraps(func)
+    def memoizer(*args, **kwargs):
+        key = func.__name__ 
+        for arg in args : 
+            key += arg.__class__.__name__ + str(arg.pk)
+        
+        rval = cache.get(key)
+        if rval == None :
+            rval = func(*args, **kwargs)
+            cache.set(key, rval, 300)
+        return rval   
+    
+    return memoizer
 
 # Test if the job or volunteer model is an early arrival job.
 def is_ea(job):
@@ -14,12 +36,41 @@ def is_ea(job):
 def is_ld(job):
     return job.end >= LD_THRESHOLD
 
+
+# Return the state of the global signup lock.
+#
+# The global signup lock prevents users from signing up for shifts 
+# before the sheet is generally available. This is necessary because 
+# the URL is open to coordinators long before the sheet is ready. 
+#
+@memoize
+def global_signup_enable():
+    gbs = Global.objects.all()
+    if len(gbs) == 0:
+        return 0
+    else:
+        return gbs[0].user_enable 
+
+def set_global_signup_enable(en):
+    gbs = Global.objects.all()
+    with transaction.atomic() :
+        if len(gbs) == 0:
+            setting = Global()
+            setting.user_enable = en
+            setting.save()
+        else:
+            gbs[0].user_enable = en
+            gbs[0].save()
+    
+    cache.clear()
+    
 # Test if the user has any form of administrative privileges
 # This is true for
 #   - Super users 
 #   - People with staff access  
 #   - People who's email address is listed in a coordinator role.
 #
+@memoize
 def is_coordinator(user):
     if user.is_anonymous() :
         return False;
@@ -34,6 +85,7 @@ def is_coordinator(user):
 #   - People with staff access 
 #   - Coordinators who's email address is listed in the role given
 #
+@memoize
 def is_coordinator_of(user, source):
     if user.is_anonymous() :
         return False;
@@ -71,7 +123,7 @@ def can_signup(user, job):
             return False
     else:
         if job.protected :
-            if is_coordinator_of(user, job.source) :
+            if is_coordinator(user) and is_coordinator_of(user, job.source) :
                 return True
             else:
                 return False
@@ -95,4 +147,4 @@ def can_delete(user, volunteer):
     if user.is_superuser :
         return True
     
-    return (volunteer.user == user) or is_coordinator_of(user, Source.objects.get(pk=volunteer.source))
+    return (volunteer.user == user) or (is_coordinator(user) and is_coordinator_of(user, Source.objects.get(pk=volunteer.source)))

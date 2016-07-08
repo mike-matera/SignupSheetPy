@@ -7,7 +7,7 @@ from django.http import Http404
 from django.shortcuts import render, redirect
 from django.utils.translation import gettext_lazy as _
 
-from models import Source, Role, Coordinator, Job, Global, global_signup_enable
+from models import Source, Role, Coordinator, Job, Global
 from parser.StaffSheetLexer import StaffSheetLexer
 from parser.StaffSheetListener import StaffSheetListener
 from parser.StaffSheetParser import StaffSheetParser
@@ -15,11 +15,10 @@ from django.db.utils import IntegrityError
 
 from schema import build, build_all, ReportedException
 
-from django.core.cache import cache
-from signup.models import set_global_signup_enable
-
-from access import is_coordinator, is_coordinator_of
+from access import is_coordinator, is_coordinator_of, global_signup_enable, set_global_signup_enable
 from datetime import timedelta
+
+from django.core.cache import cache
 
 class SkipperForm(forms.Form):
     title = forms.CharField(label='title')
@@ -77,8 +76,7 @@ def source_create(request, template_name='source/source_form.html'):
             # Now build it.
             build(user=request.user, sourceobj=source)
 
-            # Make sure cached pages update
-            cache.clear()                
+            cache.clear()
             return redirect('source_list')
         else:
             return render(request, template_name, {'form':form})            
@@ -120,7 +118,7 @@ def source_update(request, pk, template_name='source/source_form.html'):
             except IntegrityError as e:
                 print "Transaction error:", e
         
-            cache.clear()                
+            cache.clear()
             return redirect('source_list')
         else:
             return render(request, template_name, {'title': pk, 'form':form})
@@ -137,7 +135,7 @@ def source_delete(request, pk, template_name='source/confirm_delete.html'):
 
     if request.method=='POST':
         source.delete()
-        cache.clear()                
+        cache.clear()
         return redirect('source_list')
     
     return render(request, template_name, {'object':source})
@@ -159,7 +157,7 @@ def source_all(request, template_name='source/source_bulkedit.html'):
             except IntegrityError as e:
                 print "Transaction error:", e
 
-            cache.clear()                
+            cache.clear()
             return redirect('source_list')
         else:
             return render(request, template_name, {'form':form})
