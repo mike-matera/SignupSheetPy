@@ -49,7 +49,7 @@ fragment DAY
 	| [Ss] 'unday'
 	| [Mm] 'onday'
 	| [Tt] 'uesday'
-	| [Ww] 'ednsday'
+	| [Ww] 'ednesday'
 	;
 
 fragment TIMEOFDAY

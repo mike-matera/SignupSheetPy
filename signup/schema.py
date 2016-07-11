@@ -13,7 +13,7 @@ from parser.StaffSheetParser import StaffSheetParser
     
 class SchemaBuilder(StaffSheetListener) :
     
-    epoch = datetime.strptime('07/28/2016 00:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
+    epoch = datetime.strptime('07/27/2016 00:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
         
     def __init__(self, user, source=None):
         self.rows = []
@@ -143,19 +143,19 @@ class SchemaBuilder(StaffSheetListener) :
         h = 0
         m = 0
         if day[1:] == 'riday' :
-            d = 1
-        elif day[1:] == 'aturday' :
             d = 2
-        elif day[1:] == 'unday' :
+        elif day[1:] == 'aturday' :
             d = 3
-        elif day[1:] == 'onday' :
+        elif day[1:] == 'unday' :
             d = 4
-        elif day[1:] == 'uesday' :
+        elif day[1:] == 'onday' :
             d = 5
-        elif day[1:] == 'ednesday' :
+        elif day[1:] == 'uesday' :
             d = 6
-        elif day[1:] == 'hursday' :
+        elif day[1:] == 'ednesday' :
             d = 0
+        elif day[1:] == 'hursday' :
+            d = 1
         else :
             raise ValueError("This date is fucked: " + spec)
 

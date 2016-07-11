@@ -77,7 +77,7 @@
 			<h3>{{ job.job.title }}</h3>
 			<span class="jobtimes">{{ job.job.start | date:"l P" }} to {{ job.job.end | date:"l P" }}</span>
 			<div class="job">
-				<span class="jobdescription">{{ job.job.description }}</span>
+				<span class="jobdescription">{{ job.job.description | safe }}</span>
 
 				<div class="jobpeople">
 					<table class="table table-striped">
