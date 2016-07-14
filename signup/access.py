@@ -99,10 +99,10 @@ def is_coordinator_of(user, source):
 # - Singups are always barred if there are no slots left. This function DOES NOT
 #   check if the job is full. That's the responsibility of the caller.
 # - Superusers are always able to signup for an available job (this is for testing) 
+# - Coordinators can create signups on their own sheets. (XXX: Needs some policy)
 #
 # If GSE is in the COORDINATOR_ONLY state: 
-#   - A coordinator can singup if:
-#         the job is protected or is early arrival or is late departure
+#   - A coordinator can singup
 #
 # If GSE is in the AVAILABLE state: 
 #   - If the job is protected a coordinator can signup
@@ -114,19 +114,16 @@ def can_signup(user, job):
 
     if user.is_superuser :
         return True
+
+    if is_coordinator(user) and is_coordinator_of(user, job.source) :
+        return True
     
     gse = global_signup_enable()
     if gse == Global.COORDINATOR_ONLY :
-        if (job.protected or is_ea(job) or is_ld(job)) and is_coordinator(user) :
-            return True
-        else:
-            return False
+        return False
     else:
         if job.protected :
-            if is_coordinator(user) and is_coordinator_of(user, job.source) :
-                return True
-            else:
-                return False
+            return False
         else:
             return True
     
