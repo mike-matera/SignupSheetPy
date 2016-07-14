@@ -6,7 +6,7 @@ from django.core.cache import cache
 from django.db import transaction
 
 EA_THRESHOLD = datetime.strptime('07/29/2016 13:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
-LD_THRESHOLD = datetime.strptime('07/31/2016 16:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
+LD_THRESHOLD = datetime.strptime('07/31/2016 14:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
 
 # Permissions caching... make these operations a bit less DB intensive. 
 #
@@ -34,7 +34,7 @@ def is_ea(job):
 # Test if the job or volunteer model is a late departure job.
 # This works because the fields in Job and Volunteer are similarly named.
 def is_ld(job):
-    return job.end >= LD_THRESHOLD
+    return job.end > LD_THRESHOLD
 
 
 # Return the state of the global signup lock.
