@@ -261,10 +261,9 @@ def eald_csv(request):
     ld_total = 0 
     ld_filled = 0 
         
-    for j in Job.objects.filter(Q(start__lte = EA_THRESHOLD) | Q(end__gte = LD_THRESHOLD)).order_by('source_id', 'start') :
+    for j in Job.objects.filter(Q(start__lte = EA_THRESHOLD) | Q(end__gt = LD_THRESHOLD)).order_by('source_id', 'start') :
         cnt = 0
 
-        eald = ""
         if is_ea(j) :
             eald = "Early Arrival"
         
