@@ -159,6 +159,8 @@ CACHES = {
     }
 }
 
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+
 # CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
