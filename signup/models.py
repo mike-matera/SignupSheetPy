@@ -30,7 +30,7 @@ class Source(models.Model):
     title = CharField("Coordinator Role Name", max_length=64, primary_key=True)
     text = TextField(default='''
 coordinator "Name" "" ""
-
+contact ""
 description {
 }
     ''');
@@ -46,6 +46,7 @@ class Role(models.Model):
         on_delete=models.CASCADE,
         primary_key=True,
     )
+    contact = EmailField(default='')
     description = TextField()
 
 class Coordinator(models.Model):

@@ -44,6 +44,7 @@ class SchemaBuilder(StaffSheetListener) :
         role = Role()
         role.source = self.context[-1]
         role.description = self.stack.pop()
+        role.contact = self.stack.pop()
         role.save() 
         # Now that the role exists, we can create the other rows
         # which have FK constraints 
@@ -59,6 +60,9 @@ class SchemaBuilder(StaffSheetListener) :
         coord.email = self.__strToken(ctx.QUOTE(1))
         coord.url = self.__strToken(ctx.QUOTE(2))
         self.rows.append(coord)
+
+    def exitContact(self, ctx):
+        self.stack.append(self.__strToken(ctx.QUOTE()))
 
     def exitDescription(self, ctx):
         self.stack.append(self.__strToken(ctx.QUOTE()))

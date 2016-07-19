@@ -87,6 +87,7 @@ def jobs(request, title):
             entry['volunteers'].append(vol)
         
         # Determine if the user is able to signup
+        entry['needed'] = needed
         if needed > 0 :
             entry['can_signup'] = can_signup(request.user, job)
         else:

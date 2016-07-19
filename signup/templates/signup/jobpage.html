@@ -64,9 +64,11 @@
 				{% endfor %}		
 				</div>
 			</div>
-
 			<h3>Description</h3>
 			<div class="roledescription">
+				{% if role.contact != '' %}
+					<p><b>Contact: {{ role.contact }}</b></p>
+				{% endif %}
 				{{ role.description | safe }}
 			</div>
 			
@@ -77,8 +79,16 @@
 			<h3>{{ job.job.title }}</h3>
 			<span class="jobtimes">{{ job.job.start | date:"l P" }} to {{ job.job.end | date:"l P" }}</span>
 			<div class="job">
-				{% if job.job.protected %}
-					<i>Please contact the coordinator to sign up for this job.</i><br>
+				{% if job.needed > 0 %}
+					{% if role.contact != '' %}
+						<a href="mailto:{{role.contact}}?subject={{job.job.title |urlencode}}%20Shift%20{{ job.job.start | date:"l P" | urlencode}}" target="_blank">
+					{% endif %}
+					{% if job.job.protected %}
+						<i>Please contact the coordinator to sign up for this job.</i><br>
+					{% endif %}
+					{% if role.contact != '' %}
+						</a>
+					{% endif %}
 				{% endif %}
 				<span class="jobdescription">{{ job.job.description | safe }}</span>
 				<div class="jobpeople">

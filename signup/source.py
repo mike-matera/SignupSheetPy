@@ -83,7 +83,7 @@ def source_create(request, template_name='source/source_form.html'):
     else:
         default = '''
 coordinator "Name" "Email" "Url"
-
+contact "Email"
 description {
 }
     ''' 
