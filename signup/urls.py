@@ -3,6 +3,8 @@ from django.conf.urls import include, url
 from signup.source import source_list, source_create, source_update, source_delete, source_all, source_lock
 from views import default, signup, delete, jobs, email_list, download_csv, eald_csv
 from registration import register, user
+from django.contrib.auth.views import login
+from signup.auth import JanesForm
 
 urlpatterns = [
     url(r'^$', default, name='default'),
@@ -20,5 +22,7 @@ urlpatterns = [
     url(r'^email/(?P<role>[a-zA-Z0-9\-_ .]+)$', email_list, name='email_list'),
     url(r'^csv/$', download_csv, name='download_csv'),
     url(r'^eald/$', eald_csv, name='eald_csv'),
+    # override the login form. 
+    url(r'^login/$', login, {'authentication_form': JanesForm}, name='login'),
     url('^', include('django.contrib.auth.urls')),
 ]
