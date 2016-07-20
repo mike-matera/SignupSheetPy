@@ -45,13 +45,22 @@ class SchemaBuilder(StaffSheetListener) :
         role.source = self.context[-1]
         role.description = self.stack.pop()
         role.contact = self.stack.pop()
+        status = self.stack.pop()
+        if status == 'active' :
+            role.status = Role.ACTIVE
+        else :
+            role.status = Role.DISABLED
         role.save() 
+
         # Now that the role exists, we can create the other rows
         # which have FK constraints 
         for row in self.rows :
             row.save()
 
         self.rows = []
+
+    def exitStatus(self, ctx):
+        self.stack.append(ctx.getChild(1).getText())
 
     def exitCoordinator(self, ctx):
         coord = Coordinator()

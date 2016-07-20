@@ -41,11 +41,20 @@ description {
 
 class Role(models.Model):
     '''The parsed Role'''
+    DISABLED = 0
+    ACTIVE = 1
+    
+    STATUS = ((DISABLED, 'Signups for this job are disabled.'),
+              (ACTIVE, 'Signups are available.'),
+    )
+    
     source = models.OneToOneField(
         Source,
         on_delete=models.CASCADE,
         primary_key=True,
     )
+
+    status = IntegerField(choices=STATUS, default=ACTIVE)
     contact = EmailField(default='')
     description = TextField()
 

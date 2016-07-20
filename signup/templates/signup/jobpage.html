@@ -38,10 +38,16 @@
 		<div class="roleheader">
 			<h1>{{ source.title }}</h1>
 			{% if enabled == 1 %} 
-				{% if needed > 0 %}
-					<i>There are {{ needed }} shifts available of a total of {{ total }} needed.</i>
+				{% if role.status == 1 %}
+					{% if needed > 0 %}
+						<i>There are {{ needed }} shifts available of a total of {{ total }} needed.</i>
+					{% else %}
+						<i>All {{total}} available shifts are taken!</i>
+					{% endif %}
 				{% else %}
-					<i>All {{total}} available shifts are taken!</i>
+					<span style='color: red;'>
+					<i>Signups for this job have been temporarily disabled.</i>
+					</span>
 				{% endif %}
 			{% else %}
 				<span style='color: red;'>

@@ -1,4 +1,4 @@
-from models import Source, Coordinator, Global
+from models import Source, Coordinator, Global, Role
 from argparse import ArgumentError
 from datetime import datetime 
 import functools 
@@ -108,7 +108,7 @@ def is_coordinator_of(user, source):
 #   - If the job is protected a coordinator can signup
 #   - Otherwise, anyone can. 
 #
-def can_signup(user, job):
+def can_signup(user, role, job):
     if user.is_anonymous() :
         return False;
 
@@ -119,7 +119,7 @@ def can_signup(user, job):
         return True
     
     gse = global_signup_enable()
-    if gse == Global.COORDINATOR_ONLY :
+    if gse == Global.COORDINATOR_ONLY or role.status == Role.DISABLED:
         return False
     else:
         if job.protected :

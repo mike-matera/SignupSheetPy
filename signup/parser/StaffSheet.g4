@@ -5,7 +5,7 @@ sheet : role+ ;
 role : 'role' QUOTE '(' rolefragment ')' ; 
 
 rolefragment
-	: coordinator+ contact description job*
+	: status? coordinator+ contact description job*
 	;
 
 coordinator 
@@ -20,6 +20,10 @@ description
 	: 'description' QUOTE
 	;
 
+status 
+	: 'status' ('active' | 'disabled')
+	; 
+	
 job 
 	: ('protected')? 'job' QUOTE needs? timespec QUOTE?
 	;
