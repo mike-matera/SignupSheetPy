@@ -7,11 +7,12 @@ from django.http import Http404
 from django.shortcuts import render, redirect
 from django.utils.translation import gettext_lazy as _
 
-from models import Source, Role, Coordinator, Job, Global
+from models import Source, Role, Coordinator, Job, Global, Volunteer
 from parser.StaffSheetLexer import StaffSheetLexer
 from parser.StaffSheetListener import StaffSheetListener
 from parser.StaffSheetParser import StaffSheetParser
 from django.db.utils import IntegrityError
+from django.db.models import Sum
 
 from schema import build, build_all, ReportedException
 
@@ -52,14 +53,25 @@ class SourceLockForm(forms.Form):
 @user_passes_test(lambda u: is_coordinator(u))
 def source_list(request, template_name='source/source_list.html'):
     data = {}
-    data['object_list'] = []
+    data['sources'] = []
     data['signup_enable'] = global_signup_enable()    
+    jobs = 0
+    people = 0
     for s in Source.objects.order_by('title') :
         # Adjust the version date to PDT
         s.version = s.version + timedelta(hours=-7)
         if is_coordinator_of(request.user, s) :
-            data['object_list'].append(s)
+            entry = {}
+            entry['jobcount'] = Job.objects.filter(source__exact=s).aggregate(Sum('needs'))['needs__sum']
+            jobs += entry['jobcount']
+            entry['personcount'] = Volunteer.objects.filter(source__exact=s.pk).count()
+            people += entry['personcount']
+            entry['source'] = s
+            data['sources'].append(entry)
 
+    data['totaljobs'] = jobs
+    data['totalpeople'] = people
+    data['staffpercent'] = (100 * people) / jobs
     return render(request, template_name, data)
 
 @user_passes_test(lambda u: is_coordinator(u))
