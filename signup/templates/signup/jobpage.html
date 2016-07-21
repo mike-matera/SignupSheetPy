@@ -1,18 +1,23 @@
 {% extends 'base.html' %}
+{% load coordinator %}
 
 {% block sitenav %}
 {% include 'sitenav.html' %}
 {% endblock %}
 
 {% block content %}	
+	{% is_coord as is_coordinator %}
 	<div class="row">
 	<div class="col-md-3">
 		<nav>
 			<!-- For mid-size and larger devices, render as a sidebar -->
 			<div class="visible-md-block visible-lg-block visible-xl-block">
 				<ul class="list-group">
-				{% for s in sources %} 
-				  	<li class="list-group-item"><a href="{% url "jobs" title=s.pk %}">{{s.pk}}</a></li>
+				{% for r in roles %}
+					{% if is_coordinator or r.status == 1 %}
+						<li class="list-group-item"><a href="{% url "jobs" title=r.source.pk %}">{{r.source.pk}}</a>
+						</li>
+					{% endif %}
 				{% endfor %}
 				</ul>
 			</div>
@@ -24,8 +29,11 @@
 			      			Choose a Job<span class="caret"></span>
 	    				</a>
 						<ul class="dropdown-menu">
-						{% for s in sources %} 
-				  			<li class="list-group-item"><a href="{% url "jobs" title=s.pk %}">{{s.pk}}</a></li>
+						{% for r in roles %}
+							{% if is_coordinator or r.status == 1 %}
+								<li class="list-group-item"><a href="{% url "jobs" title=r.source.pk %}">{{r.source.pk}}</a>
+								</li>
+							{% endif %}
 						{% endfor %}
 						</ul>
 					</li>
@@ -36,7 +44,7 @@
 
 	<div class="col-md-9">	
 		<div class="roleheader">
-			<h1>{{ source.title }}</h1>
+			<h1>{{ role.source.pk }}</h1>
 			{% if enabled == 1 %} 
 				{% if role.status == 1 %}
 					{% if needed > 0 %}

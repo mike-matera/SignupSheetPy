@@ -7,7 +7,7 @@ from django.http import Http404
 from django.db import transaction
 from django.db.utils import IntegrityError
 
-from models import Coordinator, Job, Role, Source, Volunteer
+from models import Coordinator, Job, Role, Volunteer
 from django.shortcuts import render, redirect
 
 from django.views.decorators.cache import cache_page
@@ -27,9 +27,7 @@ class SignupForm(forms.Form):
 
 @cache_page(3600)
 def default(request):
-    source = Source.objects.order_by('title')
-    if len(source) == 0 :
-        response_text = textwrap.dedent('''
+    empty_response_text = textwrap.dedent('''
           <html>
           <head>
           <title>Be the Ball</title>
@@ -39,17 +37,23 @@ def default(request):
           <p>A doughnut without a hole is a danish.</p>
           </body>
         </html>''')
-        return HttpResponse(response_text)    
-    return redirect('jobs', source[0].title)
+    roles = Role.objects.order_by('source')
+    if len(roles) == 0 :
+        return HttpResponse(empty_response_text)    
+    
+    for r in roles : 
+        if r.status == Role.ACTIVE :
+            return redirect('jobs', r.source.pk)
 
+    return HttpResponse(empty_response_text)    
+        
 def jobs(request, title):
     # Fetch navigation information 
-    sources = Source.objects.all()
+    roles = Role.objects.all()
     
     # Fetch the role information 
-    source = Source.objects.get(pk=title)
-    role = Role.objects.filter(pk=source)[0]
-    coordinators = Coordinator.objects.filter(source__exact=source)
+    role = Role.objects.filter(source__exact=title)[0]
+    coordinators = Coordinator.objects.filter(source__exact=title)
     for c in coordinators : 
         # Fill images... 
         if c.url == "" : 
@@ -64,7 +68,7 @@ def jobs(request, title):
     
     # Now find the people that are signed up
     jobstaff = []
-    for job in Job.objects.filter(source__exact=source).order_by('start') :
+    for job in Job.objects.filter(source__exact=title).order_by('start') :
         entry = {}
         entry['job'] = job
         entry['volunteers'] = []
@@ -98,8 +102,7 @@ def jobs(request, title):
         needed_staff += needed 
         
     template_values = {
-        'sources': sources,
-        'source': source,
+        'roles': roles,
         'role': role,
         'coordinators' : coordinators,
         'jobs' : jobstaff,
