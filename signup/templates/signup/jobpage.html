@@ -21,7 +21,8 @@
 				{% endfor %}
 				{% for r in roles %}
 					{% if is_coordinator or r.status == 0 %}
-						<li class="list-group-item"><i>{{r.source.pk}} Temporarily Disabled</i>
+						<li class="list-group-item"><a href="{% url "jobs" title=r.source.pk %}">{{r.source.pk}}</a>
+						<br/><i>Temporarily Disabled</i>
 						</li>
 					{% endif %}
 				{% endfor %}
@@ -43,7 +44,9 @@
 						{% endfor %}
 						{% for r in roles %}
 							{% if is_coordinator or r.status == 0 %}
-								<li class="list-group-item"><i>{{r.source.pk}} Temporarily Disabled</i>
+								<li class="list-group-item">
+								<i>Disabled:</i>
+								<a href="{% url "jobs" title=r.source.pk %}">{{r.source.pk}}</a>
 								</li>
 							{% endif %}
 						{% endfor %}
