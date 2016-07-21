@@ -19,13 +19,15 @@
 						</li>
 					{% endif %}
 				{% endfor %}
-				{% for r in roles %}
-					{% if is_coordinator or r.status == 0 %}
-						<li class="list-group-item"><a href="{% url "jobs" title=r.source.pk %}">{{r.source.pk}}</a>
-						<br/><i>Temporarily Disabled</i>
-						</li>
-					{% endif %}
-				{% endfor %}
+				{% if not is_coordinator %}
+					{% for r in roles %}
+						{% if is_coordinator or r.status == 0 %}
+							<li class="list-group-item"><a href="{% url "jobs" title=r.source.pk %}">{{r.source.pk}}</a>
+							<br/><i>Temporarily Disabled</i>
+							</li>
+						{% endif %}
+					{% endfor %}
+				{% endif %}
 				</ul>
 			</div>
 			<!-- for phones small devices, render as a pulldown -->
@@ -42,14 +44,16 @@
 								</li>
 							{% endif %}
 						{% endfor %}
-						{% for r in roles %}
-							{% if is_coordinator or r.status == 0 %}
-								<li class="list-group-item">
-								<i>Disabled:</i>
-								<a href="{% url "jobs" title=r.source.pk %}">{{r.source.pk}}</a>
-								</li>
-							{% endif %}
-						{% endfor %}
+						{% if not is_coordinator %}
+							{% for r in roles %}
+								{% if is_coordinator or r.status == 0 %}
+									<li class="list-group-item">
+									<i>Disabled:</i>
+									<a href="{% url "jobs" title=r.source.pk %}">{{r.source.pk}}</a>
+									</li>
+								{% endif %}
+							{% endfor %}
+						{% endif %}
 						</ul>
 					</li>
 				</ul>
