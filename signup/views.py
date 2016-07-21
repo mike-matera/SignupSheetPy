@@ -46,7 +46,8 @@ def default(request):
             return redirect('jobs', r.source.pk)
 
     return HttpResponse(empty_response_text)    
-        
+
+@login_required
 def jobs(request, title):
     # Fetch navigation information 
     roles = Role.objects.all()
