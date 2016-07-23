@@ -16,6 +16,8 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.conf import settings
+from django.db.models import Sum
+from django.core.cache import cache
 
 from access import is_coordinator, can_signup, can_delete, is_ea, is_ld, EA_THRESHOLD, LD_THRESHOLD, global_signup_enable
 
@@ -47,11 +49,43 @@ def default(request):
 
     return HttpResponse(empty_response_text)    
 
+def getNavData() :
+    # Test if there's nav information cached. 
+    navdata = cache.get('navdata')
+    if navdata != None :
+        return navdata 
+    
+    # Otherwise fetch navigation information 
+    roles = Role.objects.all().order_by('source')
+    navdata = []
+    for role in roles : 
+        ent = {}
+        ent['role'] = role;
+        
+        jobcount = Job.objects.filter(source__exact=role.source.pk).aggregate(Sum('needs'))['needs__sum']
+        personcount = Volunteer.objects.filter(source__exact=role.source.pk).count()
+        
+        if jobcount == personcount : 
+            ent['pic'] = 'GreenCheck.png'
+            ent['alt'] = 'All jobs filled'
+        else :
+            if (personcount / float(jobcount)) < 0.5 :
+                ent['pic'] = 'RedExclam.png'
+                ent['alt'] = str(jobcount - personcount) + ' needed'
+            else :
+                ent['pic'] = 'OrangeExclam.png'
+                ent['alt'] = str(jobcount - personcount) + ' needed'
+        
+        navdata.append(ent)
+        
+    cache.set('navdata', navdata, 60)
+    return navdata
+
 @login_required
 def jobs(request, title):
-    # Fetch navigation information 
-    roles = Role.objects.all()
-    
+
+    navdata = getNavData()
+        
     # Fetch the role information 
     role = Role.objects.filter(source__exact=title)[0]
     coordinators = Coordinator.objects.filter(source__exact=title)
@@ -103,7 +137,7 @@ def jobs(request, title):
         needed_staff += needed 
         
     template_values = {
-        'roles': roles,
+        'navdata': navdata,
         'role': role,
         'coordinators' : coordinators,
         'jobs' : jobstaff,

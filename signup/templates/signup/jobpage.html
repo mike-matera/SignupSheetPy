@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load coordinator %}
+{% load staticfiles %}
 
 {% block sitenav %}
 {% include 'sitenav.html' %}
@@ -13,16 +14,18 @@
 			<!-- For mid-size and larger devices, render as a sidebar -->
 			<div class="visible-md-block visible-lg-block visible-xl-block">
 				<ul class="list-group">
-				{% for r in roles %}
-					{% if is_coordinator or r.status == 1 %}
-						<li class="list-group-item"><a href="{% url "jobs" title=r.source.pk %}">{{r.source.pk}}</a>
+				{% for r in navdata %}
+					{% if is_coordinator or r.role.status == 1 %}
+						<li class="list-group-item">
+							<img title="{{r.alt}}" src="{% static r.pic %}" height=20></img>
+							<a href="{% url "jobs" title=r.role.source.pk %}">{{r.role.source.pk}}</a>
 						</li>
 					{% endif %}
 				{% endfor %}
 				{% if not is_coordinator %}
-					{% for r in roles %}
-						{% if is_coordinator or r.status == 0 %}
-							<li class="list-group-item"><a href="{% url "jobs" title=r.source.pk %}">{{r.source.pk}}</a>
+					{% for r in navdata %}
+						{% if is_coordinator or r.role.status == 0 %}
+							<li class="list-group-item"><a href="{% url "jobs" title=r.role.source.pk %}">{{r.role.source.pk}}</a>
 							<br/><i>Temporarily Disabled</i>
 							</li>
 						{% endif %}
@@ -38,18 +41,22 @@
 			      			Choose a Job<span class="caret"></span>
 	    				</a>
 						<ul class="dropdown-menu">
-						{% for r in roles %}
-							{% if is_coordinator or r.status == 1 %}
-								<li class="list-group-item"><a href="{% url "jobs" title=r.source.pk %}">{{r.source.pk}}</a>
+						{% for r in navdata %}
+							{% if is_coordinator or r.role.status == 1 %}
+								<li class="list-group-item">
+									<a href="{% url "jobs" title=r.role.source.pk %}">
+										<img src="{% static r.pic %}" height=15></img>
+										{{r.role.source.pk}}
+									</a>
 								</li>
 							{% endif %}
 						{% endfor %}
 						{% if not is_coordinator %}
-							{% for r in roles %}
-								{% if is_coordinator or r.status == 0 %}
+							{% for r in navdata %}
+								{% if is_coordinator or r.role.status == 0 %}
 									<li class="list-group-item">
 									<i>Disabled:</i>
-									<a href="{% url "jobs" title=r.source.pk %}">{{r.source.pk}}</a>
+									<a href="{% url "jobs" title=r.role.source.pk %}">{{r.role.source.pk}}</a>
 									</li>
 								{% endif %}
 							{% endfor %}
