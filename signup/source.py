@@ -15,6 +15,7 @@ from django.db.utils import IntegrityError
 from django.db.models import Sum
 
 from schema import build, build_all, ReportedException
+from views import badgeFor
 
 from access import is_coordinator, is_coordinator_of, global_signup_enable, set_global_signup_enable
 from datetime import timedelta
@@ -67,6 +68,7 @@ def source_list(request, template_name='source/source_list.html'):
             entry['personcount'] = Volunteer.objects.filter(source__exact=s.pk).count()
             people += entry['personcount']
             entry['source'] = s
+            entry.update(badgeFor(entry['jobcount'], entry['personcount']))
             data['sources'].append(entry)
 
     data['totaljobs'] = jobs

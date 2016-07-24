@@ -49,11 +49,28 @@ def default(request):
 
     return HttpResponse(empty_response_text)    
 
+def badgeFor(jobcount, personcount) :
+    ent = {}
+    needed = jobcount - personcount
+    if jobcount == personcount : 
+        ent['pic'] = 'GreenCheck.png'
+        ent['alt'] = 'All jobs filled'
+    else :
+        percent = personcount / float(jobcount)
+        ent['alt'] = str(needed) + ' needed'
+        if percent < 0.25 :
+            ent['pic'] = 'RedExclam.png'
+        elif percent < 0.9 :
+            ent['pic'] = 'YellowCircle.png'
+        else :
+            ent['pic'] = 'GreenCircle.png'  
+    return ent
+
 def getNavData() :
     # Test if there's nav information cached. 
-    navdata = cache.get('navdata')
-    if navdata != None :
-        return navdata 
+    #navdata = cache.get('navdata')
+    #if navdata != None :
+    #    return navdata 
     
     # Otherwise fetch navigation information 
     roles = Role.objects.all().order_by('source')
@@ -64,18 +81,9 @@ def getNavData() :
         
         jobcount = Job.objects.filter(source__exact=role.source.pk).aggregate(Sum('needs'))['needs__sum']
         personcount = Volunteer.objects.filter(source__exact=role.source.pk).count()
-        
-        if jobcount == personcount : 
-            ent['pic'] = 'GreenCheck.png'
-            ent['alt'] = 'All jobs filled'
-        else :
-            if (personcount / float(jobcount)) < 0.5 :
-                ent['pic'] = 'RedExclam.png'
-                ent['alt'] = str(jobcount - personcount) + ' needed'
-            else :
-                ent['pic'] = 'OrangeExclam.png'
-                ent['alt'] = str(jobcount - personcount) + ' needed'
-        
+        ent['needed'] = jobcount - personcount
+        ent['jobs'] = jobcount
+        ent.update(badgeFor(jobcount, personcount))
         navdata.append(ent)
         
     cache.set('navdata', navdata, 60)

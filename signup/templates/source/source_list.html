@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load staticfiles %}
 
 {% block sitenav %}
 {% include 'sitenav.html' %}
@@ -30,7 +31,10 @@
     {% for source in sources %}
     <tr>
 	<td><a href="{% url "jobs" source.source.title %}">{{ source.source.title }}</a></td>
-	<td>{{ source.personcount }} / {{ source.jobcount }}</td>
+	<td>
+		<img title="{{source.alt}}" src="{% static source.pic %}" height=20></img>
+		{{ source.personcount }} / {{ source.jobcount }}
+	</td>
 	<td>{{ source.source.owner }}<br/>{{ source.source.version }} PDT</td>
     <td>
     	<a href="{% url "source_update" source.source.title %}">Edit</a> 
