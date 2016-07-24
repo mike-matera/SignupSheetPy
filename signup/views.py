@@ -68,9 +68,9 @@ def badgeFor(jobcount, personcount) :
 
 def getNavData() :
     # Test if there's nav information cached. 
-    #navdata = cache.get('navdata')
-    #if navdata != None :
-    #    return navdata 
+    navdata = cache.get('navdata')
+    if navdata != None :
+        return navdata 
     
     # Otherwise fetch navigation information 
     roles = Role.objects.all().order_by('source')
