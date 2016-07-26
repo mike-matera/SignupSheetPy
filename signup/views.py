@@ -55,6 +55,9 @@ def badgeFor(jobcount, personcount) :
     if jobcount == personcount : 
         ent['pic'] = 'GreenCheck.png'
         ent['alt'] = 'All jobs filled'
+    elif jobcount == personcount + 1:
+        ent['alt'] = str(needed) + ' needed'
+        ent['pic'] = 'GreenCircle.png'  
     else :
         percent = personcount / float(jobcount)
         ent['alt'] = str(needed) + ' needed'
