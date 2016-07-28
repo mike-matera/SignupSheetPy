@@ -64,6 +64,10 @@ def source_list(request, template_name='source/source_list.html'):
         if is_coordinator_of(request.user, s) :
             entry = {}
             entry['jobcount'] = Job.objects.filter(source__exact=s).aggregate(Sum('needs'))['needs__sum']
+            # jobcount will be None if there are no defined jobs. 
+            if entry['jobcount'] is None :
+                entry['jobcount'] = 0
+                
             jobs += entry['jobcount']
             entry['personcount'] = Volunteer.objects.filter(source__exact=s.pk).count()
             people += entry['personcount']

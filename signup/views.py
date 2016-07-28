@@ -83,6 +83,10 @@ def getNavData() :
         ent['role'] = role;
         
         jobcount = Job.objects.filter(source__exact=role.source.pk).aggregate(Sum('needs'))['needs__sum']
+        # Make sure zero count-jobs don't cause a crash
+        if jobcount is None : 
+            jobcount = 0
+            
         personcount = Volunteer.objects.filter(source__exact=role.source.pk).count()
         ent['needed'] = jobcount - personcount
         ent['jobs'] = jobcount
