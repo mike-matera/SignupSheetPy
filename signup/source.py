@@ -92,7 +92,7 @@ def source_list(request, template_name='source/source_list.html'):
     else : 
         data['status']['color'] = 'red'
         data['status']['text'] = "The sheet is frozen. See you next year!"
-        if not request.user.is_administrator :
+        if not request.user.is_superuser :
             data['status']['can_edit'] = False
     
     return render(request, template_name, data)
