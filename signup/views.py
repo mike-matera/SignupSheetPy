@@ -290,7 +290,7 @@ def download_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="StaffSheet.csv"'
     writer = csv.writer(response)
-    writer.writerow(["Role", "Protected", "EA/LD", "Job", "Start Day", "Start Time", "End Day", "End Time", "Name", "Email"])
+    writer.writerow(["Role", "Protected", "EA/LD", "Job", "Start Day", "Start Time", "End Day", "End Time", "Volunteer Name", "Signed-up By", "Email"])
     total = 0
     taken = 0;
     
@@ -309,11 +309,11 @@ def download_csv(request):
             eald = "Late Departure"
 
         for v in Volunteer.objects.filter(source__exact=j.source.pk, title__exact=j.title, start__exact=j.start).select_related('user') :
-            writer.writerow([j.source.pk, prot, eald, j.title, j.start.strftime(DAYFORMAT), j.start.strftime(TIMEFORMAT), j.end.strftime(DAYFORMAT), j.end.strftime(TIMEFORMAT), v.name, v.user.email])
+            writer.writerow([j.source.pk, prot, eald, j.title, j.start.strftime(DAYFORMAT), j.start.strftime(TIMEFORMAT), j.end.strftime(DAYFORMAT), j.end.strftime(TIMEFORMAT), v.name, v.user.first_name + " " + v.user.last_name,  v.user.email])
             cnt += 1
             
         for _ in xrange(0, j.needs - cnt) :
-            writer.writerow([j.source.pk, prot, eald, j.title, j.start.strftime(DAYFORMAT), j.start.strftime(TIMEFORMAT), j.end.strftime(DAYFORMAT), j.end.strftime(TIMEFORMAT), "", ""])
+            writer.writerow([j.source.pk, prot, eald, j.title, j.start.strftime(DAYFORMAT), j.start.strftime(TIMEFORMAT), j.end.strftime(DAYFORMAT), j.end.strftime(TIMEFORMAT), '', '', ''])
 
         total += j.needs
         taken += cnt
