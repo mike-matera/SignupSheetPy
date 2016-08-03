@@ -55,7 +55,6 @@ class SourceLockForm(forms.Form):
 def source_list(request, template_name='source/source_list.html'):
     data = {}
     data['sources'] = []
-    data['signup_enable'] = global_signup_enable()    
     jobs = 0
     people = 0
     for s in Source.objects.order_by('title') :
@@ -78,6 +77,21 @@ def source_list(request, template_name='source/source_list.html'):
     data['totaljobs'] = jobs
     data['totalpeople'] = people
     data['staffpercent'] = (100 * people) / jobs
+    
+    data['status'] = {}
+    data['status']['enable'] = global_signup_enable()
+    data['status']['color'] = 'black'
+    data['status']['text'] = "This is the status"
+    if data['status']['enable'] == Global.AVAILABLE : 
+        data['status']['color'] = 'green'
+        data['status']['text'] = "Signups are enabled, anyone can sign up for a job on the staff sheet."
+    elif data['status']['enable'] == Global.COORDINATOR_ONLY :
+        data['status']['color'] = 'red'
+        data['status']['text'] = "Signups are disabled, only protected jobs can be filled by coordinators at this time."
+    else : 
+        data['status']['color'] = 'red'
+        data['status']['text'] = "The sheet is frozen. See you next year!"
+    
     return render(request, template_name, data)
 
 @user_passes_test(lambda u: is_coordinator(u))

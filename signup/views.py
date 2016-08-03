@@ -7,7 +7,7 @@ from django.http import Http404
 from django.db import transaction
 from django.db.utils import IntegrityError
 
-from models import Coordinator, Job, Role, Volunteer
+from models import Coordinator, Job, Role, Volunteer, Global
 from django.shortcuts import render, redirect
 
 from django.views.decorators.cache import cache_page
@@ -113,9 +113,7 @@ def jobs(request, title):
             
     total_staff = 0;
     needed_staff = 0;
-    
-    enabled = global_signup_enable()
-    
+        
     # Now find the people that are signed up
     jobstaff = []
     for job in Job.objects.filter(source__exact=title).order_by('start') :
@@ -150,7 +148,30 @@ def jobs(request, title):
         jobstaff.append(entry)
         total_staff += job.needs
         needed_staff += needed 
-        
+    
+    # Fill enablement and status data 
+    status = {}
+    status['enable'] = global_signup_enable()
+    status['color'] = 'black'
+    status['text'] = 'This is the status'
+    if status['enable'] == Global.COORDINATOR_ONLY :
+        status['color'] = 'red'
+        status['text'] = '''The staff sheet is not yet enabled for general signups.<br/>
+                If you're a coordinator you will be able to fill your protected jobs.<br/>
+                Otherwise please wait for an announcement indicating the general availability of the staff sheet.'''
+    elif status['enable'] == Global.AVAILABLE : 
+        if role.status == Role.DISABLED : 
+            status['color'] = 'red'
+            status['text'] = '''Signups for this job have been temporarily disabled until essential jobs are filled.<br/>'''
+        else : 
+            if needed > 0 :
+                status['text'] = "There are " + str(needed) + " shifts available of a total of " + str(total_staff) + " needed."
+            else :
+                status['text'] = "All " + str(total_staff) + " available shifts are taken!"
+    elif status['enable'] == Global.CLOSED :
+        status['color'] = 'red'
+        status['text'] = 'Signups are closed. See you next year!'
+
     template_values = {
         'navdata': navdata,
         'role': role,
@@ -160,7 +181,7 @@ def jobs(request, title):
         'user' : request.user,
         'total' : total_staff, 
         'needed' : needed_staff,
-        'enabled' : enabled,
+        'status' : status,
     }
     return render_to_response('signup/jobpage.html', context=template_values)
 

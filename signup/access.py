@@ -112,13 +112,16 @@ def can_signup(user, role, job):
     if user.is_anonymous() :
         return False;
 
+    gse = global_signup_enable()
+    if gse == Global.CLOSED :
+        return False
+
     if user.is_superuser :
         return True
 
     if is_coordinator(user) and is_coordinator_of(user, job.source) :
         return True
     
-    gse = global_signup_enable()
     if gse == Global.COORDINATOR_ONLY or role.status == Role.DISABLED:
         return False
     else:
@@ -139,7 +142,11 @@ def can_signup(user, role, job):
 #
 def can_delete(user, volunteer):
     if user.is_anonymous() :
-        return False;
+        return False
+
+    gse = global_signup_enable()
+    if gse == Global.CLOSED :
+        return False
 
     if user.is_superuser :
         return True

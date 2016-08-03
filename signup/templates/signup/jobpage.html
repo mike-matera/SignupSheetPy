@@ -73,26 +73,9 @@
 	<div class="col-md-9">	
 		<div class="roleheader">
 			<h1>{{ role.source.pk }}</h1>
-			{% if enabled == 1 %} 
-				{% if role.status == 1 %}
-					{% if needed > 0 %}
-						<i>There are {{ needed }} shifts available of a total of {{ total }} needed.</i>
-					{% else %}
-						<i>All {{total}} available shifts are taken!</i>
-					{% endif %}
-				{% else %}
-					<span style='color: red;'>
-					<i>Signups for this job have been temporarily disabled until essential jobs are filled.</i>
-					</span>
-				{% endif %}
-			{% else %}
-				<span style='color: red;'>
-				<i>The staff sheet is not yet enabled for general signups.<br/>
-				If you're a coordinator you will be able to fill your protected jobs.<br/>
-				Otherwise please wait for an announcement indicating the general availability of the staff sheet.
-				</i>
-				</span>
-			{% endif %} 				
+			<span style='color: {{ status.color }};'>
+				<i>{{ status.text | safe}}</i>
+			</span>
 			<h3>Coordinators</h3>
 			<div class="coordinators">
 				<div class="coordinator-pics">

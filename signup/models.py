@@ -18,11 +18,14 @@ class Global(models.Model):
     
     COORDINATOR_ONLY = 0 
     AVAILABLE = 1
+    CLOSED = 2
     
     CHOICES = (
             (COORDINATOR_ONLY, 'Restricted: Only coordinators can fill shifts, and only protected shifts.'),
             (AVAILABLE, 'Open access: Anyone can signup for shifts.'),
+            (CLOSED, 'Closed: Signups are closed. See you next year!'),
     )
+    
     user_enable = IntegerField(choices=CHOICES, default=COORDINATOR_ONLY)
 
 class Source(models.Model):
