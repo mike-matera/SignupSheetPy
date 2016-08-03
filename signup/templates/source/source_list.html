@@ -33,11 +33,13 @@
 	</td>
 	<td>{{ source.source.owner }}<br/>{{ source.source.version }} PDT</td>
     <td>
-    	<a href="{% url "source_update" source.source.title %}">Edit</a> 
-    	{% if user.is_superuser %} |
-	    	<a href="{% url "source_delete" source.source.title %}">Delete</a>
+    	{% if status.can_edit %}
+	    	<a href="{% url "source_update" source.source.title %}">Edit</a> |
 	    {% endif %}
-	    | <a href="{% url "email_list" source.source.title %}">Email</a>
+    	{% if user.is_superuser %} 
+	    	<a href="{% url "source_delete" source.source.title %}">Delete</a> |
+	    {% endif %}
+	 	   	<a href="{% url "email_list" source.source.title %}">Email</a>
     </td>
     {% endfor %}
     </table>

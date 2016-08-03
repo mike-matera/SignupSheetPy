@@ -82,6 +82,7 @@ def source_list(request, template_name='source/source_list.html'):
     data['status']['enable'] = global_signup_enable()
     data['status']['color'] = 'black'
     data['status']['text'] = "This is the status"
+    data['status']['can_edit'] = True
     if data['status']['enable'] == Global.AVAILABLE : 
         data['status']['color'] = 'green'
         data['status']['text'] = "Signups are enabled, anyone can sign up for a job on the staff sheet."
@@ -91,6 +92,7 @@ def source_list(request, template_name='source/source_list.html'):
     else : 
         data['status']['color'] = 'red'
         data['status']['text'] = "The sheet is frozen. See you next year!"
+        data['status']['can_edit'] = False
     
     return render(request, template_name, data)
 
