@@ -33,13 +33,15 @@ needs
 	;
 	
 timespec 
-	: ('repeats' NUMBER 'times' 'starting' TIME
-		| 'repeats' 'starting' TIME 'until' TIME
-		| 'starts' TIME		
+	: ('repeats' NUMBER 'times' START TIME
+		| 'repeats' START TIME 'until' TIME
+		| START TIME		
 		) duration
 	;
 
-duration : 'for' NUMBER ('hour'|'hours'|'minutes') ;
+duration : ('for'|'every') NUMBER ('hour'|'hours'|'minutes') ;
+
+START : 'starts' | 'starting' ; 
 
 NUMBER : DIGIT+ ('.' DIGIT+)? ; 
 
@@ -48,7 +50,7 @@ QUOTE : '{' ~[}]* '}'
 	  | '\'' ~[']* '\''
 	  ;
 	   
-TIME  : '@[' ' '* DAY ' '+ TIMEOFDAY ' '* ']' ;
+TIME  : DAY ' '+ TIMEOFDAY ;
 
 fragment DAY 
 	: [Tt] 'hursday'

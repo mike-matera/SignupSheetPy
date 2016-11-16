@@ -148,9 +148,7 @@ class SchemaBuilder(StaffSheetListener) :
         return float(token.getText())
 
     def __timespecToken(self, token):
-        # Stip the junk @[ and ] off 
         spec = token.getText()
-        spec = spec[2:-1]
         (day, time) = spec.split()
         d = 0
         h = 0
