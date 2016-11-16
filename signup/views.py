@@ -19,7 +19,7 @@ from django.conf import settings
 from django.db.models import Sum
 from django.core.cache import cache
 
-from access import is_coordinator, can_signup, can_delete, is_ea, is_ld, EA_THRESHOLD, LD_THRESHOLD, global_signup_enable
+from access import is_coordinator, is_coordinator_of, can_signup, can_delete, is_ea, is_ld, EA_THRESHOLD, LD_THRESHOLD, global_signup_enable
 
 class SignupForm(forms.Form):
     name = forms.CharField(label='Name')
@@ -113,7 +113,7 @@ def jobs(request, title):
             
     total_staff = 0;
     needed_staff = 0;
-        
+
     # Now find the people that are signed up
     jobstaff = []
     for job in Job.objects.filter(source__exact=title).order_by('start') :
@@ -182,6 +182,7 @@ def jobs(request, title):
         'total' : total_staff, 
         'needed' : needed_staff,
         'status' : status,
+        'coordinator_of' : is_coordinator_of(request.user, role.source)
     }
     return render_to_response('signup/jobpage.html', context=template_values)
 

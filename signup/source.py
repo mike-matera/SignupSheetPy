@@ -25,7 +25,8 @@ from django.core.cache import cache
 class SkipperForm(forms.Form):
     title = forms.CharField(label='title')
     text = forms.CharField(label='text', widget=forms.Textarea({'cols': '80', 'rows': '30'}))
-    
+    next = forms.CharField(label='next', widget=forms.HiddenInput(), required=False)
+
     def clean(self):
         super(SkipperForm, self).clean()
         try: 
@@ -127,6 +128,8 @@ description {
 
 @user_passes_test(lambda u: is_coordinator(u))
 def source_update(request, pk, template_name='source/source_form.html'):    
+
+    next_page = request.GET.get('next', None)
     source = Source.objects.get(title=pk)
     if source == None :
         raise Http404("Source does not exist")
@@ -154,13 +157,16 @@ def source_update(request, pk, template_name='source/source_form.html'):
                 print "Transaction error:", e
         
             cache.clear()
-            return redirect('source_list')
+            if form.cleaned_data['next'] != "" : 
+                return redirect('jobs', form.cleaned_data['next'])
+            else:
+                return redirect('source_list')
         else:
-            return render(request, template_name, {'title': pk, 'form':form})
+            return render(request, template_name, {'title': pk, 'form':form, 'next': next_page})
 
     else:
         form = SkipperForm({'text': source.text, 'title': source.title})
-        return render(request, template_name, {'title': pk, 'form':form})
+        return render(request, template_name, {'title': pk, 'form': form, 'next': next_page})
 
 @user_passes_test(lambda u: u.is_superuser)
 def source_delete(request, pk, template_name='source/confirm_delete.html'):

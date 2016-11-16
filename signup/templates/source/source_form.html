@@ -22,7 +22,12 @@
     {{ form.text }}
 </div>
 <input type="submit" value="Submit" />
-<a href="{% url "source_list" %}">Cancel</a>
+{% if next == None %}
+	<a href="{% url "source_list" %}">Cancel</a>
+{% else %}
+	<input type="hidden" name="next" value="{{next}}"/>
+	<a href="{% url "jobs" next %}">Cancel</a>
+{% endif %}
 </form>
 
 {% endblock %}

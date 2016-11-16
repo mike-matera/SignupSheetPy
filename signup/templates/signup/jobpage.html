@@ -72,7 +72,12 @@
 
 	<div class="col-md-9">	
 		<div class="roleheader">
-			<h1>{{ role.source.pk }}</h1>
+			<div class="title"> 
+  			    <h1 style="display: inline;">{{ role.source.pk }}</h1>
+  			    {% if coordinator_of %}
+	  	  			[<a href="{% url "source_update" role.source.pk%}?next={{role.source.pk}}">edit</a>]
+  	  			{% endif %}
+			</div>
 			<span style='color: {{ status.color }};'>
 				<i>{{ status.text | safe}}</i>
 			</span>
