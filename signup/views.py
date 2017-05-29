@@ -8,6 +8,8 @@ from django.db import transaction
 from django.db.utils import IntegrityError
 
 from models import Coordinator, Job, Role, Volunteer, Global
+import source
+
 from django.shortcuts import render, redirect
 
 from django.views.decorators.cache import cache_page
@@ -29,25 +31,15 @@ class SignupForm(forms.Form):
 
 @cache_page(3600)
 def default(request):
-    empty_response_text = textwrap.dedent('''
-          <html>
-          <head>
-          <title>Be the Ball</title>
-          </head>
-          <body>
-          <p>A flute with no hole is not a flute.</p>
-          <p>A doughnut without a hole is a danish.</p>
-          </body>
-        </html>''')
     roles = Role.objects.order_by('source')
     if len(roles) == 0 :
-        return HttpResponse(empty_response_text)    
+        return redirect(source.source_all)    
     
     for r in roles : 
         if r.status == Role.ACTIVE :
             return redirect('jobs', r.source.pk)
 
-    return HttpResponse(empty_response_text)    
+    return redirect(source.source_all)    
 
 def badgeFor(jobcount, personcount) :
     ent = {}
@@ -96,6 +88,14 @@ def getNavData() :
     cache.set('navdata', navdata, 60)
     return navdata
 
+def fill_image_url(url):
+    # Fill images... 
+    if url == "" : 
+        url = settings.COORDINATOR_DEFAULT_IMG
+    elif url[0:4] != "http" :
+        url = settings.COORDINATOR_STATIC_IMG_URL + url
+    return url
+    
 @login_required
 def jobs(request, title):
 
@@ -105,11 +105,7 @@ def jobs(request, title):
     role = Role.objects.filter(source__exact=title)[0]
     coordinators = Coordinator.objects.filter(source__exact=title)
     for c in coordinators : 
-        # Fill images... 
-        if c.url == "" : 
-            c.url = settings.COORDINATOR_DEFAULT_IMG
-        elif c.url[0:4] != "http" :
-            c.url = settings.COORDINATOR_STATIC_IMG_URL + c.url
+        c.url = fill_image_url(c.url)
             
     total_staff = 0;
     needed_staff = 0;

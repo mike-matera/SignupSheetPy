@@ -18,6 +18,6 @@ python ./manage.py migrate signup
 
 # Create a superuser
 echo "Creating superuser maximus..."
-python ./manage.py createsuperuser --username maximus --email 'maximus@fatboycentral.com'
+python ./manage.py createsuperuser --username 'maximus@fatboycentral.com' --email 'maximus@fatboycentral.com'
 
 
