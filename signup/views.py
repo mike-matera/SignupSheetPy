@@ -87,14 +87,6 @@ def getNavData() :
         
     cache.set('navdata', navdata, 60)
     return navdata
-
-def fill_image_url(url):
-    # Fill images... 
-    if url == "" : 
-        url = settings.COORDINATOR_DEFAULT_IMG
-    elif url[0:4] != "http" :
-        url = settings.COORDINATOR_STATIC_IMG_URL + url
-    return url
     
 @login_required
 def jobs(request, title):
@@ -105,8 +97,12 @@ def jobs(request, title):
     role = Role.objects.filter(source__exact=title)[0]
     coordinators = Coordinator.objects.filter(source__exact=title)
     for c in coordinators : 
-        c.url = fill_image_url(c.url)
-            
+        # Fill images... 
+        if c.url == "" : 
+            c.url = settings.COORDINATOR_DEFAULT_IMG
+        elif c.url[0:4] != "http" :
+            c.url = settings.COORDINATOR_STATIC_IMG_URL + c.url
+
     total_staff = 0;
     needed_staff = 0;
 

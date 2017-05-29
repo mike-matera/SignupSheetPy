@@ -168,5 +168,5 @@ EMAIL_BACKEND = 'signup.gae_email.GAEEmailBackend'
 GAE_EMAIL_SENDER = appengine_authorized_sender
 
 # Where to find coordinator images. 
-COORDINATOR_STATIC_IMG_URL = 'http://vpnep.fatboycentral.com/static/images/'
+COORDINATOR_STATIC_IMG_URL = 'https://storage.googleapis.com/rock-scanner-5666/Coordinator Pics/'
 COORDINATOR_DEFAULT_IMG = COORDINATOR_STATIC_IMG_URL + 'gearhead.png'
