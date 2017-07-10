@@ -299,7 +299,6 @@ class UnicodeWriter:
         self.encoder = codecs.getincrementalencoder(encoding)()
 
     def writerow(self, row):
-        print "COCK:", row
         self.writer.writerow([s.encode("utf-8") for s in row])
         # Fetch UTF-8 output from the queue ...
         data = self.queue.getvalue()
@@ -324,7 +323,7 @@ def download_csv(request):
     total = 0
     taken = 0;
     
-    for j in Job.objects.order_by('source_id') :
+    for j in Job.objects.order_by('source_id', 'start') :
         cnt = 0
         if j.protected : 
             prot = "Yes"
