@@ -94,7 +94,12 @@ def jobs(request, title):
     navdata = getNavData()
         
     # Fetch the role information 
-    role = Role.objects.filter(source__exact=title)[0]
+    roles = Role.objects.filter(source__exact=title)
+    if len(roles) == 0 :
+        # bogus role 
+        return default(request)
+    
+    role = roles[0]
     coordinators = Coordinator.objects.filter(source__exact=title)
     for c in coordinators : 
         # Fill images... 
