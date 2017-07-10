@@ -1,5 +1,6 @@
 import textwrap
-import csv
+import csv, codecs, cStringIO
+
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django import forms 
@@ -282,12 +283,43 @@ def email_list(request, role, template_name='misc/email_list.html'):
 
 DAYFORMAT = "%A"
 TIMEFORMAT = "%I:%M %p"
+DAYTIMEFORMAT = DAYFORMAT + " " + TIMEFORMAT
 
+class UnicodeWriter:
+    """
+    A CSV writer which will write rows to CSV file "f",
+    which is encoded in the given encoding.
+    """
+
+    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
+        # Redirect output to a queue
+        self.queue = cStringIO.StringIO()
+        self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
+        self.stream = f
+        self.encoder = codecs.getincrementalencoder(encoding)()
+
+    def writerow(self, row):
+        print "COCK:", row
+        self.writer.writerow([s.encode("utf-8") for s in row])
+        # Fetch UTF-8 output from the queue ...
+        data = self.queue.getvalue()
+        data = data.decode("utf-8")
+        # ... and reencode it into the target encoding
+        data = self.encoder.encode(data)
+        # write to the target stream
+        self.stream.write(data)
+        # empty queue
+        self.queue.truncate(0)
+
+    def writerows(self, rows):
+        for row in rows:
+            self.writerow(row)
+            
 @user_passes_test(lambda u: is_coordinator(u))
 def download_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="StaffSheet.csv"'
-    writer = csv.writer(response)
+    writer = UnicodeWriter(response)
     writer.writerow(["Role", "Protected", "EA/LD", "Job", "Start Day", "Start Time", "End Day", "End Time", "Volunteer Name", "Signed-up By", "Email"])
     total = 0
     taken = 0;
@@ -318,15 +350,15 @@ def download_csv(request):
 
 
     writer.writerow([])
-    writer.writerow(['Total staff', total])
-    writer.writerow(['Jobs unfilled', total-taken])
+    writer.writerow(['Total staff', str(total)])
+    writer.writerow(['Jobs unfilled', str(total-taken)])
     return response
 
 @user_passes_test(lambda u: is_coordinator(u))
 def eald_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="EA_LD.csv"'
-    writer = csv.writer(response)
+    writer = UnicodeWriter(response)
     writer.writerow(["Early/Late", "Role", "Job", "Start Time", "End Time", "Person"])
     
     ea_total = 0 
@@ -344,11 +376,11 @@ def eald_csv(request):
             eald = "Late Departure"
             
         for v in Volunteer.objects.filter(source__exact=j.source, title__exact=j.title, start__exact=j.start) :                
-            writer.writerow([eald, j.source.pk, j.title, j.start, j.end, v.name])
+            writer.writerow([eald, j.source.pk, j.title, j.start.strftime(DAYTIMEFORMAT), j.end.strftime(DAYTIMEFORMAT), v.name])
             cnt += 1
             
         for _ in xrange(0, j.needs - cnt) :
-            writer.writerow([eald, j.source.pk, j.title, j.start, j.end, ""])
+            writer.writerow([eald, j.source.pk, j.title, j.start.strftime(DAYTIMEFORMAT), j.end.strftime(DAYTIMEFORMAT), ""])
 
         if is_ea(j) :
             ea_total += j.needs
@@ -359,9 +391,9 @@ def eald_csv(request):
             ld_filled += cnt
 
     writer.writerow([])
-    writer.writerow(['Total Early Arrivals', ea_total])
-    writer.writerow(['Taken Early Arrivals', ea_filled])
-    writer.writerow(['Total Late Departures', ld_total])
-    writer.writerow(['Taken Late Departures', ld_filled])
+    writer.writerow(['Total Early Arrivals', str(ea_total)])
+    writer.writerow(['Taken Early Arrivals', str(ea_filled)])
+    writer.writerow(['Total Late Departures', str(ld_total)])
+    writer.writerow(['Taken Late Departures', str(ld_filled)])
     
     return response
