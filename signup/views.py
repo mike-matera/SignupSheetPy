@@ -162,8 +162,8 @@ def jobs(request, title):
             status['color'] = 'red'
             status['text'] = '''Signups for this job have been temporarily disabled until essential jobs are filled.<br/>'''
         else : 
-            if needed > 0 :
-                status['text'] = "There are " + str(needed) + " shifts available of a total of " + str(total_staff) + " needed."
+            if needed_staff > 0 :
+                status['text'] = "There are " + str(needed_staff) + " shifts available of a total of " + str(total_staff) + " needed."
             else :
                 status['text'] = "All " + str(total_staff) + " available shifts are taken!"
     elif status['enable'] == Global.CLOSED :
