@@ -84,7 +84,7 @@ class Volunteer(models.Model):
     '''
     A volunteer in a role
     
-    The volunteer must be able to join with Job, but it cannot use a public key.
+    The volunteer must be able to join with Job, but it cannot use a surrogate key.
     Recompiling the Role source will delete Coordinators and Jobs, but should not
     delete the people who have already signed up. Instead they should be joined 
     with the natural key of Job which is (role, title, start). This is a shitty
@@ -106,6 +106,5 @@ class Volunteer(models.Model):
     end = DateTimeField(default=datetime.now)
     # --- 
     
-    name = CharField(max_length=64)
     comment = TextField()
-    
+   

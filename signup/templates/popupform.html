@@ -1,3 +1,5 @@
+{% load staticfiles %}
+
 <!-- popup form -->	
  <div class="modal fade" id="form-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
    <div class="modal-dialog">
@@ -10,6 +12,7 @@
 
 <script>
 var formAjaxSubmit = function(form, modal) {
+     jQuery(modal).modal('toggle');
      $(form).submit(function (e) {
          e.preventDefault();
          $.ajax({
@@ -38,7 +41,6 @@ var formAjaxSubmit = function(form, modal) {
  
  function popup_click(ajaxurl) {
      $('#modal-content').load(ajaxurl, function () {
-         $('#form-modal').modal('toggle');
          formAjaxSubmit('#modal-content form', '#form-modal');
      });
  }

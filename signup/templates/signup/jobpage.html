@@ -128,7 +128,7 @@
 						<td>{{ forloop.counter }}</td>
 						<td>
 						{% if volunteer.volunteer != None %}
-							{{ volunteer.volunteer.name | title}} 
+							{{ volunteer.volunteer.user.first_name | title}} {{ volunteer.volunteer.user.last_name | title}} 
 							{% if volunteer.volunteer.comment != "" %}
 								<span class="volunteercomment">{{ volunteer.volunteer.comment }}</span>
 							{% endif %}

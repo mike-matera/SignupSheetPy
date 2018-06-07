@@ -3,7 +3,6 @@ import csv, codecs, cStringIO
 
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
-from django import forms 
 from django.http import Http404
 from django.db import transaction
 from django.db.utils import IntegrityError
@@ -24,11 +23,7 @@ from django.core.cache import cache
 
 from access import is_coordinator, is_coordinator_of, can_signup, can_delete, is_ea, is_ld, EA_THRESHOLD, LD_THRESHOLD, global_signup_enable
 
-class SignupForm(forms.Form):
-    name = forms.CharField(label='Name')
-    comment = forms.CharField(label='Comment', required=False)
-    def clean(self):
-        super(SignupForm, self).clean()
+from view_email_autocomplete import SignupFormCoordinator, SignupFormUser
 
 @cache_page(3600)
 def default(request):
@@ -118,7 +113,7 @@ def jobs(request, title):
         entry = {}
         entry['job'] = job
         entry['volunteers'] = []
-        for volunteer in Volunteer.objects.filter(source__exact=job.source.pk, title__exact=job.title, start__exact=job.start) :
+        for volunteer in Volunteer.objects.filter(source__exact=job.source.pk, title__exact=job.title, start__exact=job.start).select_related('user') :
             vol = {}
             vol['volunteer'] = volunteer
             if can_delete(request.user, volunteer) :
@@ -185,7 +180,16 @@ def jobs(request, title):
     return render_to_response('signup/jobpage.html', context=template_values)
 
 @login_required
-def signup(request, pk, template_name='signup/signup.html'):
+def signup(request, pk):
+    do_coordinator = False
+    if is_coordinator(request.user) : 
+        template_name='signup/signup-coordinator.html'
+        form = SignupFormCoordinator
+        do_coordinator = True
+    else:
+        template_name='signup/signup.html'
+        form = SignupFormUser
+        
     job = Job.objects.get(pk=pk)
     if job == None :
         raise Http404("Job does not exist")
@@ -193,17 +197,30 @@ def signup(request, pk, template_name='signup/signup.html'):
     # TODO: Check perimssions 
     
     if request.method=='POST':
-        form = SignupForm(request.POST)
+        form = form(request.POST)
         if form.is_valid() :         
             try: 
                 with transaction.atomic() :
+                    signup_user = request.user
+
+                    if do_coordinator : 
+                        print ('Looking up other user.')
+                        # Check if the form has another user's email in it. 
+                        other_user = form.cleaned_data.get('email', None) 
+                        if other_user is not None : 
+                            print ('Other user field is not blank. It is:', other_user)
+                            for user in User.objects.filter(email__exact=other_user) :
+                                signup_user = user
+                                break
+                        
+                    print ('The other user is:', signup_user)
                     # Create a Volunteer with form data 
                     # We need the natural key from the job... this way 
                     # if the job changes in a non-meaningful way this volunteer
                     # continues to be valid. 
                     v = Volunteer(
-                                  user = request.user,
-                                  name = form.cleaned_data['name'],
+                                  user = signup_user,
+                                  name = signup_user.first_name + ' ' + signup_user.last_name,
                                   comment = form.cleaned_data['comment'],
                                   source = job.source.pk,
                                   title = job.title, 
@@ -245,8 +262,7 @@ def signup(request, pk, template_name='signup/signup.html'):
             return render(request, template_name, {'form':form, 'ret':job.source.pk, 'job':job})
             
     else:
-        ## Pre-fill the form with the user's name (They don't have to use it.)
-        form = SignupForm({'name': request.user.first_name + " " + request.user.last_name})
+        form = form()
         return render(request, template_name, {'form':form, 'ret':job.source.pk, 'job':job})
 
 @login_required

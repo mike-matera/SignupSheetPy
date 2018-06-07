@@ -8,7 +8,24 @@
   	  <p>{{ job.start | date:"l P" }} to {{ job.end | date:"l P" }}
     </div>
     <div class="modal-body">
-  	  {{ form.as_p  }} 
+		{{ form.non_field_errors }}
+		
+		<div class="fieldWrapper">
+    		{{ form.comment.errors }}
+    		<label for="{{ form.name.id_for_label }}">Comment:</label>
+    		{{ form.comment }}
+		</div>
+
+		<div class="fieldWrapper">
+			<br><br>
+			<i><b>Coordinators:</b> You can signup a different user by email address:</i>
+			<p>
+    		{{ form.email.errors }}
+    		<p>
+    		{{ form.email }}<br>
+    		<i>The user must be registered.</i>
+		</div>
+
     </div>
     <div class="modal-footer">
         <input type="submit" value="Signup" class="btn btn-primary"></input>
