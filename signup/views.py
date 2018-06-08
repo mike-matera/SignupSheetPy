@@ -80,7 +80,8 @@ def getNavData() :
         ent['jobs'] = jobcount
         ent.update(badgeFor(jobcount, personcount))
         navdata.append(ent)
-        
+    
+    navdata.sort(reverse=True, key=lambda role: role['needed'])
     cache.set('navdata', navdata, 60)
     return navdata
     
