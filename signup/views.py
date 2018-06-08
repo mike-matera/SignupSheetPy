@@ -89,6 +89,17 @@ def getNavData() :
 def jobs(request, title):
 
     navdata = getNavData()
+    # Next and previous roles. 
+    
+    current_job_index = 0
+    for i, item in enumerate(navdata) : 
+        if item['role'].source.title == title :
+            current_job_index = i
+            break
+
+    next_job = navdata[(current_job_index + 1) % len(navdata)]['role'] 
+    prev_job = navdata[(current_job_index - 1) % len(navdata)]['role'] 
+    
         
     # Fetch the role information 
     roles = Role.objects.filter(source__exact=title)
@@ -171,12 +182,13 @@ def jobs(request, title):
         'role': role,
         'coordinators' : coordinators,
         'jobs' : jobstaff,
-        'next' : title,
         'user' : request.user,
         'total' : total_staff, 
         'needed' : needed_staff,
         'status' : status,
-        'coordinator_of' : is_coordinator_of(request.user, role.source)
+        'coordinator_of' : is_coordinator_of(request.user, role.source),
+        'next' : next_job,
+        'prev' : prev_job,
     }
     return render_to_response('signup/jobpage.html', context=template_values)
 

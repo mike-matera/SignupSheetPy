@@ -70,13 +70,21 @@
 		</nav>		
 	</div>
 	<div class="col-md-9">
-	    <h1 style="display: inline;">{{ role.source.pk }}</h1>
-		    {% if coordinator_of %}
-  	  			[<a href="{% url "source_update" role.source.pk%}?next={{role.source.pk}}">edit</a>]
-  			{% endif %}
-		<span style="color: {{ status.color }};">
-			<p><i>{{ status.text | safe}}</i></p>
-		</span>
+		<div class="row"> 
+			<div class="col-md-6">
+			    <h1 style="display: inline;">{{ role.source.pk }}</h1>
+				    {% if coordinator_of %}
+  		  				[<a href="{% url "source_update" role.source.pk%}?next={{role.source.pk}}">edit</a>]
+  					{% endif %}
+				<span style="color: {{ status.color }};">
+					<p><i>{{ status.text | safe}}</i></p>
+				</span>
+			</div>
+			<div class="visible-md-block visible-lg-block visible-xl-block text-right col-md-6">
+				<a href="{{ prev.source.title }}"><< {{ prev.source.title }}</a> | 
+				<a href="{{ next.source.title }}">{{ next.source.title }} >></a>
+			</div>
+		</div>
 		<h3>Coordinators</h3>
 		<div class="row coordinators">
 		{% for coordinator in coordinators %}
@@ -124,7 +132,7 @@
 				<div class="joblist">
 					{% for volunteer in job.volunteers %} 
 						<div class="row row-striped">
-							<div class="col-xs-2 signup-delete-button">
+							<div class="col-xs-2 text-right">
 									{% if volunteer.can_delete != None %}
 										<a href='javascript:void(0)' onclick='popup_click("{% url "delete" pk=volunteer.can_delete %}");'>Delete</a>
 									{% elif job.can_signup %}	
