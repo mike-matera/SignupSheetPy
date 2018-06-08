@@ -10,14 +10,12 @@
 <h1>Your Signups</h1>
 <table class="table table-striped">
 <tr>
-<th>Who</th>
 <th>What</th>
 <th>When</th>
 <th>Actions</th>
 </tr>    
 {% for signup in signups %}
  	<tr>
- 		<td>{{ signup.name }}</td>
 		<td>{{ signup.source }} : {{ signup.title }}</td>
 		<td>{{ signup.start | date:"l P" }} to {{ signup.end | date:"l P" }}</td>
 		<td><a href='javascript:void(0)' onclick='popup_click("{% url "delete" pk=signup.pk %}");'>Delete</a></td>
