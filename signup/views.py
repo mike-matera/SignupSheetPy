@@ -27,13 +27,14 @@ from view_email_autocomplete import SignupFormCoordinator, SignupFormUser
 
 @cache_page(3600)
 def default(request):
-    roles = Role.objects.order_by('source')
-    if len(roles) == 0 :
-        return redirect(source.source_all)    
     
-    for r in roles : 
-        if r.status == Role.ACTIVE :
-            return redirect('jobs', r.source.pk)
+    navdata = getNavData()
+    if len(navdata) == 0 : 
+        return redirect(source.source_all)    
+
+    for r in navdata: 
+        if r['role'].status == Role.ACTIVE :
+            return redirect('jobs', r['role'].source.pk)
 
     return redirect(source.source_all)    
 
@@ -93,7 +94,7 @@ def jobs(request, title):
     
     current_job_index = 0
     for i, item in enumerate(navdata) : 
-        if item['role'].source.title == title :
+        if item['role'].source.pk == title :
             current_job_index = i
             break
 
