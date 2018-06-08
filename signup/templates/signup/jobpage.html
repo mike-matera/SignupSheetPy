@@ -67,48 +67,48 @@
 					</li>
 				</ul>
 			</div>
-		<nav>		
+		</nav>		
 	</div>
-
-	<div class="col-md-9">	
-		<div class="roleheader">
-			<div class="title"> 
-  			    <h1 style="display: inline;">{{ role.source.pk }}</h1>
-  			    {% if coordinator_of %}
-	  	  			[<a href="{% url "source_update" role.source.pk%}?next={{role.source.pk}}">edit</a>]
-  	  			{% endif %}
-			</div>
-			<span style='color: {{ status.color }};'>
-				<i>{{ status.text | safe}}</i>
-			</span>
-			<h3>Coordinators</h3>
-			<div class="coordinators">
-				<div class="coordinator-pics">
-					{% for coordinator in coordinators %}
-  					  <img src="{{coordinator.url}}"></img>
-					{% endfor %}	
+	<div class="col-md-9">
+	    <h1 style="display: inline;">{{ role.source.pk }}</h1>
+		    {% if coordinator_of %}
+  	  			[<a href="{% url "source_update" role.source.pk%}?next={{role.source.pk}}">edit</a>]
+  			{% endif %}
+		<span style="color: {{ status.color }};">
+			<p><i>{{ status.text | safe}}</i></p>
+		</span>
+		<h3>Coordinators</h3>
+		<div class="row">
+		{% for coordinator in coordinators %}
+			<div class="coordinator col-xs-4 col-sm-3 col-md-3">
+				<div class="coordinator-picture">
+					<center>
+						<img class="img-responsive" src="{{coordinator.url}}"></img>
+					</center>
 				</div>
-				<div class="coordinator-names">
-				{% for coordinator in coordinators %}
-  				  	{{ coordinator.name }}{% if not forloop.last %}, {%endif%} 
-				{% endfor %}		
+				<div class="coordinator-name">
+					{{ coordinator.name }}
 				</div>
 			</div>
-			<h3>Description</h3>
-			<div class="roledescription">
-				{% if role.contact != '' %}
-					<p><b>Contact: {{ role.contact }}</b></p>
-				{% endif %}
-				{{ role.description | safe }}
-			</div>
-			
+		{% endfor %}	
 		</div>
-		
-		<div class="jobslist">
+		<div class="roledescription">
+			{% if role.contact != '' %}
+				<p><b>Contact: {{ role.contact }}</b></p>
+			{% endif %}
+				{{ role.description | safe }}
+		</div>
 		{% for job in jobs %} 
-			<h3>{{ job.job.title }}</h3>
-			<span class="jobtimes">{{ job.job.start | date:"l P" }} to {{ job.job.end | date:"l P" }}</span>
 			<div class="job">
+				<div class="visible-md-block visible-lg-block visible-xl-block">
+					<span class="jobtitle">{{ job.job.title }}</span>
+					<span class="jobtimes">{{ job.job.start | date:"l P" }} to {{ job.job.end | date:"l P" }}</span>
+				</div>
+				<div class="visible-xs-block visible-sm-block">
+					<span class="jobtitle">{{ job.job.title }}</span>
+					<br>
+					<span class="jobtimes">{{ job.job.start | date:"l P" }} to {{ job.job.end | date:"l P" }}</span>
+				</div>
 				{% if job.needed > 0 %}
 					{% if role.contact != '' %}
 						<a href="mailto:{{role.contact}}?subject={{job.job.title |urlencode}}%20Shift%20{{ job.job.start | date:"l P" | urlencode}}" target="_blank">
@@ -121,36 +121,34 @@
 					{% endif %}
 				{% endif %}
 				<span class="jobdescription">{{ job.job.description | safe }}</span>
-				<div class="jobpeople">
-					<table class="table table-striped">
+				<div class="joblist">
 					{% for volunteer in job.volunteers %} 
-						<tr>
-						<td>{{ forloop.counter }}</td>
-						<td>
-						{% if volunteer.volunteer != None %}
-							{{ volunteer.volunteer.user.first_name | title}} {{ volunteer.volunteer.user.last_name | title}} 
-							{% if volunteer.volunteer.comment != "" %}
-								<span class="volunteercomment">{{ volunteer.volunteer.comment }}</span>
+						<div class="row row-striped">
+							<div class="col-xs-2 signup-delete-button">
+									{% if volunteer.can_delete != None %}
+										<a href='javascript:void(0)' onclick='popup_click("{% url "delete" pk=volunteer.can_delete %}");'>Delete</a>
+									{% elif job.can_signup %}	
+										<a href='javascript:void(0)' onclick='popup_click("{% url "signup" pk=job.job.pk %}");'>Signup</a>
+										<!-- <button onclick='popup_click("{% url "signup" pk=job.job.pk %}");'>Signup</button> -->
+									{% endif %}
+							</div>
+							{% if volunteer.volunteer != None %}
+								<div class="col-xs-3 volunteername">
+									{{ volunteer.volunteer.user.first_name | title}} {{ volunteer.volunteer.user.last_name | title}} 
+								</div>
+								<div class="col-xs-7 volunteercomment">
+									{% if volunteer.volunteer.comment != "" %}
+										{{ volunteer.volunteer.comment }}
+									{% endif %}
+								</div>
 							{% endif %}
-							{% if volunteer.can_delete != None %}
-								<a href='javascript:void(0)' onclick='popup_click("{% url "delete" pk=volunteer.can_delete %}");'>(delete)</a>
-							{% endif %}
-						{% endif %}							
-						</td>
-						</tr>
+						</div>
 					{% endfor %}
-					</table>								
-					{% if job.can_signup %}	
-						<button onclick='popup_click("{% url "signup" pk=job.job.pk %}");'>Signup</button>
-					{% endif %}					
 				</div>
-
-			</div>		
+			</div>	
 		{% endfor %}
-		</div>
-		
-	</div> <!-- end of the selection column -->
 
+	</div>
 	{% include "popupform.html" %}		
 {% endblock %}
 

@@ -29,14 +29,11 @@
 	</head>
 
     <body>
-
       <div class="container-fluid">
 		<div class="header clearfix">
 			{% block sitenav %}{% endblock sitenav %}
 		</div>
-		<div class="content">
-   	 		{% block content %}{% endblock content %}
-		</div>
-	</div>
+		{% block content %}{% endblock content %}
+	  </div>
     </body>
 </html>
