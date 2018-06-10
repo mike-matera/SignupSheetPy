@@ -2,13 +2,13 @@ from django.conf.urls import include, url
 
 from signup.source import source_list, source_create, source_update, source_delete, source_all, source_lock
 from views import default, signup, delete, jobs, email_list, download_csv, eald_csv
-from view_email_autocomplete import EmailAutocomplete
+from view_email_autocomplete import EmailAutocomplete, UserAutocomplete
 from registration import register, user
 from django.contrib.auth.views import login
 from signup.auth import JanesForm
 
 urlpatterns = [
-    url(r'email-autocomplete/$', EmailAutocomplete.as_view(), name='email-autocomplete'),
+    url(r'email-autocomplete/$', UserAutocomplete.as_view(), name='email-autocomplete'),
     url(r'^$', default, name='default'),
     url(r'^jobs/(?P<title>[a-zA-Z0-9\-_ .]+)$', jobs, name='jobs'),
     url(r'^signup/(?P<pk>\d+)$', signup, name='signup'),

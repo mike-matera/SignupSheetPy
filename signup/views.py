@@ -1,4 +1,5 @@
-import textwrap
+from __future__ import print_function 
+
 import csv, codecs, cStringIO
 
 from django.http import HttpResponse
@@ -162,16 +163,16 @@ def jobs(request, title):
     status['text'] = 'This is the status'
     if status['enable'] == Global.COORDINATOR_ONLY :
         status['color'] = 'red'
-        status['text'] = '''The staff sheet is not yet enabled for general signups.<br/>
-                If you're a coordinator you will be able to fill your protected jobs.<br/>
+        status['text'] = '''The staff sheet is not yet enabled for general signups.
+                If you're a coordinator you will be able to fill your protected jobs.
                 Otherwise please wait for an announcement indicating the general availability of the staff sheet.'''
     elif status['enable'] == Global.AVAILABLE : 
         if role.status == Role.DISABLED : 
             status['color'] = 'red'
-            status['text'] = '''Signups for this job have been temporarily disabled until essential jobs are filled.<br/>'''
+            status['text'] = '''Signups for this job have been temporarily disabled until essential jobs are filled.'''
         else : 
             if needed_staff > 0 :
-                status['text'] = "There are " + str(needed_staff) + " shifts available of a total of " + str(total_staff) + " needed."
+                status['text'] = "There are " + str(total_staff) + " jobs and " + str(needed_staff) + " left to fill."
             else :
                 status['text'] = "All " + str(total_staff) + " available shifts are taken!"
     elif status['enable'] == Global.CLOSED :
@@ -218,16 +219,13 @@ def signup(request, pk):
                     signup_user = request.user
 
                     if do_coordinator : 
-                        print ('Looking up other user.')
                         # Check if the form has another user's email in it. 
                         other_user = form.cleaned_data.get('email', None) 
-                        if other_user is not None : 
-                            print ('Other user field is not blank. It is:', other_user)
+                        if other_user is not None and other_user != u'': 
                             for user in User.objects.filter(email__exact=other_user) :
                                 signup_user = user
                                 break
                         
-                    print ('The other user is:', signup_user)
                     # Create a Volunteer with form data 
                     # We need the natural key from the job... this way 
                     # if the job changes in a non-meaningful way this volunteer

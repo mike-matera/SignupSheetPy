@@ -85,7 +85,11 @@
 				<a href="{{ next.source.pk }}">{{ next.source.pk }} >></a>
 			</div>
 		</div>
-		<h3>Coordinators</h3>
+		<div class="row coordinators">
+			<div class="col-xs-12">
+				<h3>Coordinators</h3>
+			</div>
+		</div>
 		<div class="row coordinators">
 		{% for coordinator in coordinators %}
 			<div class="coordinator col-xs-4 col-sm-3 col-md-3">
@@ -100,11 +104,13 @@
 			</div>
 		{% endfor %}	
 		</div>
-		<div class="roledescription">
-			{% if role.contact != '' %}
-				<p><b>Contact: {{ role.contact }}</b></p>
-			{% endif %}
+		<div class="row roledescription">
+			<div class="col-xs-12">
+				{% if role.contact != '' %}
+					<p><b>Contact: {{ role.contact }}</b></p>
+				{% endif %}
 				{{ role.description | safe }}
+			</div>
 		</div>
 		{% for job in jobs %} 
 			<div class="job">
