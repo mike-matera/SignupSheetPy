@@ -46,9 +46,11 @@ class Role(models.Model):
     '''The parsed Role'''
     DISABLED = 0
     ACTIVE = 1
+    WORKING = 2
     
     STATUS = ((DISABLED, 'Signups for this job are disabled.'),
               (ACTIVE, 'Signups are available.'),
+              (WORKING, 'This job is under construction and will be available soon.'),
     )
     
     source = models.OneToOneField(

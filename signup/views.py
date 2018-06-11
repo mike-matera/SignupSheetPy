@@ -26,23 +26,32 @@ from access import is_coordinator, is_coordinator_of, can_signup, can_delete, is
 
 from view_email_autocomplete import SignupFormCoordinator, SignupFormUser
 
-@cache_page(3600)
 def default(request):
     
-    navdata = getNavData()
+    navdata = filterNavData(request.user)
+    
     if len(navdata) == 0 : 
-        return redirect(source.source_all)    
-
-    for r in navdata: 
-        if r['role'].status == Role.ACTIVE :
-            return redirect('jobs', r['role'].source.pk)
-
-    return redirect(source.source_all)    
-
-def badgeFor(jobcount, personcount) :
+        if request.user.is_superuser :
+            return redirect(source.source_all)    
+        else:
+            if request.user.is_authenticated() :
+                return render(request, "underconstruction.html")
+            else:
+                return redirect('/login')
+    
+    return redirect('jobs', navdata[0]['role'].source.pk)
+        
+def badgeFor(role, jobcount, personcount) :
     ent = {}
     needed = jobcount - personcount
-    if jobcount == personcount : 
+    
+    if role.status == Role.WORKING :
+        ent['pic'] = 'OrangeConstruction.png'
+        ent['alt'] = 'Under construction.'
+    elif role.status == Role.DISABLED :
+        ent['pic'] = 'GrayDoNotEnter.png'
+        ent['alt'] = 'Temporarily disabled.'
+    elif jobcount == personcount : 
         ent['pic'] = 'GreenCheck.png'
         ent['alt'] = 'All jobs filled'
     elif jobcount == personcount + 1:
@@ -57,6 +66,7 @@ def badgeFor(jobcount, personcount) :
             ent['pic'] = 'YellowCircle.png'
         else :
             ent['pic'] = 'GreenCircle.png'  
+    
     return ent
 
 def getNavData() :
@@ -80,19 +90,40 @@ def getNavData() :
         personcount = Volunteer.objects.filter(source__exact=role.source.pk).count()
         ent['needed'] = jobcount - personcount
         ent['jobs'] = jobcount
-        ent.update(badgeFor(jobcount, personcount))
+        ent['status'] = role.status
+        ent.update(badgeFor(role, jobcount, personcount))
         navdata.append(ent)
     
     navdata.sort(reverse=True, key=lambda role: role['needed'])
     cache.set('navdata', navdata, 60)
     return navdata
-    
+
+def filterNavData(user) :
+    navdata = getNavData()
+    rval = []
+    for role in navdata : 
+        if role['status'] == Role.ACTIVE :
+            rval.append(role)
+        else :
+            if is_coordinator_of(user, role['role'].source) :
+                rval.append(role)
+    return rval
+            
 @login_required
 def jobs(request, title):
 
-    navdata = getNavData()
-    # Next and previous roles. 
+    navdata = filterNavData(request.user)
+
+    found = False
+    for job in navdata : 
+        if job['role'].source.title == title :
+            found = True 
+            break; 
     
+    if not found : 
+        return redirect('/')
+    
+    # Next and previous roles. 
     current_job_index = 0
     for i, item in enumerate(navdata) : 
         if item['role'].source.pk == title :

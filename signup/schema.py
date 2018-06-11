@@ -1,3 +1,5 @@
+from __future__ import print_function 
+
 from datetime import datetime, timedelta
 import re
 
@@ -48,8 +50,10 @@ class SchemaBuilder(StaffSheetListener) :
         status = self.stack.pop()
         if status == 'active' :
             role.status = Role.ACTIVE
-        else :
+        elif status == 'disabled' :
             role.status = Role.DISABLED
+        else :
+            role.status = Role.WORKING
         role.save() 
 
         # Now that the role exists, we can create the other rows

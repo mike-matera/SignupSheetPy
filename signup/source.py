@@ -72,7 +72,8 @@ def source_list(request, template_name='source/source_list.html'):
             entry['personcount'] = Volunteer.objects.filter(source__exact=s.pk).count()
             people += entry['personcount']
             entry['source'] = s
-            entry.update(badgeFor(entry['jobcount'], entry['personcount']))
+            role = Role.objects.filter(source__exact=s.pk)[0]
+            entry.update(badgeFor(role, entry['jobcount'], entry['personcount']))
             data['sources'].append(entry)
 
     data['totaljobs'] = jobs

@@ -21,7 +21,7 @@ description
 	;
 
 status 
-	: 'status' ('active' | 'disabled')
+	: 'status' ('active' | 'disabled' | 'working')
 	; 
 	
 job 
