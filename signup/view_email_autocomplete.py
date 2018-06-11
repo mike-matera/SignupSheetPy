@@ -10,6 +10,17 @@ from django.core.cache import cache
 
 import json 
 
+def cache_fill():
+    users = cache.get('users_lookup')
+    if users is None :
+        users = []
+        qs = User.objects.all()
+        for user in qs : 
+            users.append(dict(id = user.email, text = user.first_name + ' ' + user.last_name + ' (' + user.email + ')'))
+        users.sort(key=lambda x : x['text'].lower())
+        cache.set('users_lookup', users, 600)
+    return users 
+
 class EmailAutocomplete(autocomplete.Select2QuerySetView):
 
     def get_queryset(self):
@@ -47,16 +58,8 @@ class UserAutocomplete(autocomplete.Select2ListView):
 
         if self.q is None or self.q == '' : 
             return [] 
-            
-        users = cache.get('users_lookup')
-        if users is None :
-            users = []
-            qs = User.objects.all()
-            for user in qs : 
-                users.append(dict(id = user.email, text = user.first_name + ' ' + user.last_name + ' (' + user.email + ')'))
-            users.sort(key=lambda x : x['text'].lower())
-            cache.set('users_lookup', users, 600)
-            
+        
+        users = cache_fill()            
         return [user for user in users if self.q.lower() in user['text'].lower() ]
 
 
@@ -68,8 +71,8 @@ class SignupFormUser(forms.Form):
 class SignupFormCoordinator(forms.Form):
 
     def gen_choices():
-        print ('Generating choices...')
-        return [user.email for user in User.objects.all()]
+        users = cache_fill()            
+        return [ user['id'] for user in users ] 
     
     comment = forms.CharField(label='Comment', required=False)
     email = autocomplete.Select2ListChoiceField(
