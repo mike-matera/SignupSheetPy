@@ -30,3 +30,6 @@
 # Ignore some of my helper stuff
 /upload.sh
 
+# PyCharm stuff
+.idea
+
