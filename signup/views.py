@@ -58,7 +58,11 @@ def badgeFor(role, jobcount, personcount) :
         ent['alt'] = str(needed) + ' needed'
         ent['pic'] = 'GreenCircle.png'  
     else :
-        percent = personcount / float(jobcount)
+        if jobcount == 0:
+            percent = 0
+        else:
+            percent = personcount / float(jobcount)
+                        
         ent['alt'] = str(needed) + ' needed'
         if percent < 0.25 :
             ent['pic'] = 'RedExclam.png'
