@@ -1,44 +1,61 @@
 {% extends "base.html" %}
 
 {% block sitenav %}
-{% include 'sitenav.html' %}
+    {% include 'sitenav.html' %}
 {% endblock %}
 
 {% block content %}
-  <h1>Login</h1>
-{% if form.errors %}
-<p>Your username and password didn't match. Please try again.</p>
-{% endif %}
+    <div class="row">
+        <div class="col-sm-4"></div>
+        <div class="col-sm-4">
+                <h1>Login</h1>
+                {% if form.errors %}
+                    <p>Your username and password didn't match. Please try again.</p>
+                {% endif %}
 
-{% if next %}
-    {% if user.is_authenticated %}
-    <p>Your account doesn't have access to this page. To proceed,
-    please login with an account that has access.</p>
-    {% else %}
-    <p>Please login to see this page.</p>
-    {% endif %}
-{% endif %}
+                {% if next %}
+                    {% if user.is_authenticated %}
+                        <p>Your account doesn't have access to this page. To proceed,
+                            please login with an account that has access.</p>
+                    {% else %}
+                        <p>Please login to see this page.</p>
+                    {% endif %}
+                {% endif %}
 
-<p>Not registered yet? <a href="{% url 'register' %}">Create an Account</a></p>
+                <p>Not registered yet? <a href="{% url 'register' %}">Create an Account</a></p>
 
-<form method="post" action="{% url 'login' %}">
-{% csrf_token %}
-<table>
-<tr>
-    <td><b>Email Address:</b></td>
-    <td>{{ form.username }}</td>
-</tr>
-<tr>
-    <td>{{ form.password.label_tag }}</td>
-    <td>{{ form.password }}</td>
-</tr>
-</table>
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <div class="row" style="margin: 5px;">
+                        <div class="col-md-4">
+                            <b>Email:</b>
+                        </div>
+                        <div class="col-md-8">
+                            {{ form.username }}
+                        </div>
+                    </div>
+                    <div class="row" style="margin: 5px;">
+                        <div class="col-md-4">
+                            {{ form.password.label_tag }}
+                        </div>
+                        <div class="col-md-8">
+                            {{ form.password }}
+                        </div>
+                    </div>
+                    <div class="row" style="margin: 5px;">
+                        <div class="col-md-4"></div>
+                        <div class="col-md-8">
+                            <input type="submit" value="Login"/>
 
-<input type="submit" value="Login" />
-<input type="hidden" name="next" value="{{ next }}" />
-</form>
+                        </div>
+                    </div>
+                    <input type="hidden" name="next" value="{{ next }}"/>
+                </form>
 
-{# Assumes you setup the password_reset view in your URLconf #}
-<p><a href="{% url 'password_reset' %}">Lost your password?</a></p>
+                {# Assumes you setup the password_reset view in your URLconf #}
+                <p><a href="{% url 'password_reset' %}">Lost your password?</a></p>
 
+        </div>
+        <div class="col-sm-4"></div>
+    </div>
 {% endblock %}

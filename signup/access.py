@@ -114,22 +114,39 @@ def can_signup(user, role, job):
 
     gse = global_signup_enable()
     if gse == Global.CLOSED :
+        # No one can signup, not even administrators.
         return False
 
-    if user.is_superuser :
-        return True
+    elif gse == Global.COORDINATOR_ONLY :
+        # Coordinator preview.
 
-    if is_coordinator(user) and is_coordinator_of(user, job.source) :
-        return True
-    
-    if gse == Global.COORDINATOR_ONLY or role.status == Role.DISABLED:
-        return False
-    else:
-        if job.protected :
-            return False
-        else:
+        if role.status == Role.DISABLED :
+            if user.is_superuser:
+                return True;
+            else:
+                return False
+        else :
+            if user.is_superuser :
+                return True;
+            elif is_coordinator(user) and is_coordinator_of(user, job.source) and job.protected :
+                # Coordinators can pre-fill protected jobs.
+                return True
+            else:
+                return False
+
+    elif gse == Global.AVAILABLE :
+        # General availability
+
+        if user.is_superuser:
+            return True;
+        elif is_coordinator(user) and is_coordinator_of(user, job.source) :
             return True
-    
+        else:
+            if job.protected :
+                return False
+            else:
+                return True
+
     # Never get here  
     raise ArgumentError("Failed to fully decode permissions in can_signup()")
 

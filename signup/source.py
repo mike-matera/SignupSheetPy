@@ -78,7 +78,11 @@ def source_list(request, template_name='source/source_list.html'):
 
     data['totaljobs'] = jobs
     data['totalpeople'] = people
-    data['staffpercent'] = (100 * people) / jobs
+    
+    if jobs != 0 :
+        data['staffpercent'] = (100 * people) / jobs
+    else:
+        data['staffpercent'] = 0
     
     data['status'] = {}
     data['status']['enable'] = global_signup_enable()

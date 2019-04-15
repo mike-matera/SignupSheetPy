@@ -144,6 +144,8 @@
 									{% elif job.can_signup %}	
 										<a href='javascript:void(0)' onclick='popup_click("{% url "signup" pk=job.job.pk %}");'>Signup</a>
 										<!-- <button onclick='popup_click("{% url "signup" pk=job.job.pk %}");'>Signup</button> -->
+                                    {%  else  %}
+                                        &nbsp;
 									{% endif %}
 							</div>
 							{% if volunteer.volunteer != None %}
