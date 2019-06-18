@@ -6,7 +6,7 @@ from django.core.cache import cache
 from django.db import transaction
 
 EA_THRESHOLD = datetime.strptime('07/29/2016 13:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
-LD_THRESHOLD = datetime.strptime('07/31/2016 14:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
+LD_THRESHOLD = datetime.strptime('07/31/2016 12:00:00 UTC', '%m/%d/%Y %H:%M:%S %Z')
 
 # Permissions caching... make these operations a bit less DB intensive. 
 #
