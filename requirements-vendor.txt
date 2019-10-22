@@ -1,4 +1,4 @@
-Django==1.9
+Django==1.11.23
 antlr4-python2-runtime==4.5.3
 GoogleAppEngineCloudStorageClient==1.9.22.1
 django-autocomplete-light==3.2.10
