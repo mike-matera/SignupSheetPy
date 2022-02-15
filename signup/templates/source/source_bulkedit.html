@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block sitenav %}
+{% include 'sitenav.html' %}
+{% endblock %}
+
+{% block content %}
+<h1>Whole Sheet Editor</h1>
+	<form action="/source/a" method="post">
+   		{% csrf_token %}
+		<div class="fieldWrapper">
+   			{{ form.text }}
+		</div>
+   		<input type="submit" value="Submit" />
+		<a href="{% url "source_list" %}">Cancel</a>
+	</form>
+{% endblock %}
+		

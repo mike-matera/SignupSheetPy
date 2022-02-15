@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block sitenav %}
+{% include 'sitenav.html' %}
+{% endblock %}
+
+{% block content %}
+  <h1>Email Addresses for {{data.role}}</h1>
+  <p><i>Copy and paste these into your favorite email program.</i></p>
+  <div class="emaillist">
+	{% for v in data.volunteers %}
+		{{ v }} <br>
+	{% endfor %}
+  </div>
+  <br>
+  <a href="{% url "source_list" %}">Back</a>
+{% endblock %}

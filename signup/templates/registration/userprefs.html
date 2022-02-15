@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}User Preferences{% endblock %}
+
+{% block sitenav %}
+{% include 'sitenav.html' %}
+{% endblock %}
+
+{% block content %}
+<h1>Your Signups</h1>
+<table class="table table-striped">
+<tr>
+<th>What</th>
+<th>When</th>
+<th>Actions</th>
+</tr>    
+{% for signup in signups %}
+ 	<tr>
+		<td>{{ signup.source }} : {{ signup.title }}</td>
+		<td>{{ signup.start | date:"l P" }} to {{ signup.end | date:"l P" }}</td>
+		<td><a href='javascript:void(0)' onclick='popup_click("{% url "delete" pk=signup.pk %}");'>Delete</a></td>
+	</tr>
+  {% endfor %}
+</table>
+  
+  <h1>Update your Name:</h1>
+  <form action="" method="post">
+{% csrf_token %}
+      {{ form.as_p }}
+      <input type="submit" value="Update">
+  </form>
+
+  <h3><a href="{% url 'password_change' %}">Change your password.</a></h3>
+  
+ {% include "popupform.html" %}	
+  
+{% endblock %}
+

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block sitenav %}
+{% include 'sitenav.html' %}
+{% endblock %}
+
+{% block content %}
+<h1>ATTENTION: You are setting the global signup lock.</h1>
+<form method="post">{% csrf_token %}
+{{ form }} 
+<input type="submit" value="Submit" />
+<a href="{% url "source_list" %}">Cancel</a>
+</form>
+
+{% endblock %}

@@ -22,6 +22,8 @@
 /signup/parser/StaffSheetListener.py
 /signup/parser/StaffSheetParser.py
 /signup/parser/StaffSheet.tokens
+/signup/parser/StaffSheet.interp
+/signup/parser/StaffSheetLexer.interp
 
 # Temorarily while I get the DB ready 
 /signup/migrations
@@ -34,3 +36,4 @@
 .idea
 
 venv*/
+db.sqlite3

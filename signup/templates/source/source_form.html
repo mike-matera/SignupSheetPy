@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block sitenav %}
+{% include 'sitenav.html' %}
+{% endblock %}
+
+{% block content %}
+{% if title == None %}
+	<h1>Editing New Role</h1>
+{% else %}
+	<h1>Editing {{ title }}</h1>
+{% endif %}
+<form method="post">{% csrf_token %}
+{{ form.non_field_errors }}
+	<div class="fieldWrapper" {% if title != None %} style='display: none;' {% endif %}>
+    	{{ form.title.errors }}
+		<label for="{{ form.title.id_for_label }}">New Role Title:</label>    
+		{{ form.title }}
+	</div>
+<div class="fieldWrapper">
+    {{ form.text.errors }}
+    {{ form.text }}
+</div>
+<input type="submit" value="Submit" />
+{% if next == None %}
+	<a href="{% url "source_list" %}">Cancel</a>
+{% else %}
+	<input type="hidden" name="next" value="{{next}}"/>
+	<a href="{% url "jobs" next %}">Cancel</a>
+{% endif %}
+</form>
+
+{% endblock %}
