@@ -33,3 +33,4 @@
 # PyCharm stuff
 .idea
 
+venv*/
