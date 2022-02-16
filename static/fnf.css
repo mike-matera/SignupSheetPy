@@ -1,0 +1,72 @@
+
+html {
+     overflow: -moz-scrollbars-vertical;
+     overflow: scroll;
+}
+
+/* compensate for the navbar */
+body {
+ 	padding-top: 70px;
+	padding-bottom: 10em;
+}
+
+.navbar-header a {
+	font-family: 'Patrick Hand', cursive;
+}
+
+.text-right {
+	text-align: right;
+}
+
+.roledescription {
+  padding-top: 1em;
+  background-color: #efefef;
+}
+
+.job {
+	padding-top: 3em;
+}
+
+.jobtitle {
+	padding-right: 1em;
+	font-size: 150%;
+}
+
+.joblist {
+	padding-top: 1em;
+	padding-left: 2em;
+	padding-right: 1em;
+}
+
+.row-striped:nth-of-type(odd){
+  background-color: #efefef;
+}
+
+.row-striped:nth-of-type(even){
+  background-color: #ffffff;
+}
+
+.jobtimes {
+	font-weight: bold;
+}
+
+.coordinators {
+    background-color: #efefef;
+}
+
+.coordinator {
+    padding: 1em; 
+    max-width: 210px;
+}
+
+.coordinator-picture {
+	background-color: #ffffff;
+	padding: 5px;
+}
+
+.coordinator-name {
+	font-family: 'Patrick Hand', cursive;
+	font-size: 150%;
+	text-align: center;
+	background-color: #ffffff;
+}
