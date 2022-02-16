@@ -30,10 +30,10 @@ def index(request):
         if request.user.is_superuser :
             return redirect(signup.views.source.source_all)    
         else:
-            if request.user.is_authenticated() :
+            if request.user.is_authenticated:
                 return render(request, "underconstruction.html")
             else:
-                return redirect('/login')
+                return redirect('/accounts/login')
     
     return redirect('jobs', navdata[0]['role'].source.pk)
         
