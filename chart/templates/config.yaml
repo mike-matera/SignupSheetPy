@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-signup-config
+data:
+  DJANGO_DEBUG: "{{ index .Values.auth "django-debug" }}"
+  DJANGO_DB: "{{ index .Values.auth "db-type" }}"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-django-admin
+type: Opaque
+stringData:
+  django-admin-username: "{{ index .Values.auth "django-admin-username" }}"
+  django-admin-password: "{{ index .Values.auth "django-admin-password" }}"
+  django-admin-email: "{{ index .Values.auth "django-admin-email" }}"
+  django-secret-key: "{{ index .Values.auth "django-secret-key" }}"
