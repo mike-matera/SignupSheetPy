@@ -16,15 +16,6 @@
 /fnf/secrets.py
 /fnf/letsencrypt.py 
 
-# Ignore the generated parser
-/signup/parser/StaffSheetLexer.py
-/signup/parser/StaffSheetLexer.tokens
-/signup/parser/StaffSheetListener.py
-/signup/parser/StaffSheetParser.py
-/signup/parser/StaffSheet.tokens
-/signup/parser/StaffSheet.interp
-/signup/parser/StaffSheetLexer.interp
-
 # Ignore some of my helper stuff
 /upload.sh
 

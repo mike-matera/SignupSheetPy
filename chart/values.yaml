@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: signup
-  pullPolicy: Never
+  repository: ghcr.io/mike-matera/signupsheetpy
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: "release"
 
 imagePullSecrets: []
 nameOverride: ""
