@@ -144,4 +144,4 @@ COORDINATOR_STATIC_IMG_URL = 'https://storage.googleapis.com/rock-scanner-5666/C
 COORDINATOR_DEFAULT_IMG = COORDINATOR_STATIC_IMG_URL + 'gearhead.png'
 
 # FIXME: This should be an environment var
-CSRF_TRUSTED_ORIGINS = ['https://*']
+CSRF_TRUSTED_ORIGINS = [ 'https://signup.app.lifealgorithmic.com', ]
