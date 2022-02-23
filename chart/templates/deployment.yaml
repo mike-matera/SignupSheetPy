@@ -38,10 +38,12 @@ spec:
               containerPort: 8000
               protocol: TCP
           livenessProbe:
+            timeoutSeconds: 5
             httpGet:
               path: /accounts/login/
               port: 8000
           readinessProbe:
+            timeoutSeconds: 5
             httpGet:
               path: /accounts/login/
               port: 8000
