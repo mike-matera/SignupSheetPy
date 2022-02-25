@@ -145,3 +145,9 @@ COORDINATOR_DEFAULT_IMG = COORDINATOR_STATIC_IMG_URL + 'gearhead.png'
 
 # FIXME: This should be an environment var
 CSRF_TRUSTED_ORIGINS = [ 'https://signup.app.lifealgorithmic.com', ]
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
