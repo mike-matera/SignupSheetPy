@@ -25,8 +25,9 @@ def react_jobs(request, title):
     
     coordinators = []
     jobstaff = []
+    volunteers = []
     role = {
-        'title': title, 
+        'role': title, 
         'status': roles[0].status,
         'contact': roles[0].contact,
         'description': roles[0].description,
@@ -34,6 +35,7 @@ def react_jobs(request, title):
         'staff': jobstaff,
         'is_coordinator': is_coordinator_of(request.user, roles[0].source),
         'is_user': request.user.username,
+        'volunteers': volunteers,
     }
     for c in Coordinator.objects.filter(source__exact=title):
         if c.url == "" : 
@@ -55,17 +57,20 @@ def react_jobs(request, title):
             'needs': job.needs,
             'protected': job.protected,
         }
-        entry['volunteers'] = []
-        for vol in Volunteer.objects.filter(source__exact=job.source.pk, title__exact=job.title, start__exact=job.start).select_related('user'):
-            entry['volunteers'].append({
-                'username': vol.user.username,
-                'first_name': vol.user.first_name,
-                'last_name': vol.user.last_name,
-                'comment': vol.comment,
-            })
-                 
         jobstaff.append(entry)
-    
+
+    for vol in Volunteer.objects.filter(source__exact=job.source.pk).select_related('user'):
+        volunteers.append({
+            'username': vol.user.username,
+            'first_name': vol.user.first_name,
+            'last_name': vol.user.last_name,
+            'comment': vol.comment,
+            'role': vol.source,
+            'title': vol.title, 
+            'start': vol.start.strftime("%A %H:%M"),
+            'end': vol.end.strftime("%A %H:%M"),
+        })
+
 
     context = {
         'data': json.dumps(role),
