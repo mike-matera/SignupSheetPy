@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load coordinator %}
+{% load static %}
+
+{% block sitenav %}
+{% include 'sitenav.html' %}
+{% endblock %}
+
+{% block content %}	
+<div id="like_button_container"></div>
+{% endblock %}
+
+{% block components %}	
+{{ data|json_script:"page-data" }}
+
+<!-- Load our React component. -->
+<script src="/static/js/jobpage.js"></script>	
+
+{% endblock %}

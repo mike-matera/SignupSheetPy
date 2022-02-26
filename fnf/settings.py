@@ -11,21 +11,24 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 import os 
-
+import secrets
 from pathlib import Path
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ['DJANGO_DEBUG'] == "True"
+DEBUG = os.environ.get('DJANGO_DEBUG') == "True"
+
+# SECURITY WARNING: keep the secret key used in production secret!
+if DEBUG:
+    SECRET_KEY = 'this-is-a-lousy-key-for-debugging'
+else:
+    SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
 # FIXME: The liveness probe in kubernetes needs to be allowed
 ALLOWED_HOSTS = [ '*' ]
@@ -95,7 +98,6 @@ DATABASES_CHOICES = {
 DATABASES = {
     'default': DATABASES_CHOICES[os.environ.get("DJANGO_DB", 'sqlite')],
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
