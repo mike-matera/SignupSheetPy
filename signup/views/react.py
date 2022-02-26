@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.http import Http404
+from django.db.models import Sum
 
 from signup.views.views import filterNavData, index
 
@@ -17,7 +18,9 @@ from signup.access import is_coordinator, is_coordinator_of, can_signup, can_del
 
 @login_required
 def react_jobs(request, title):
-        
+    """
+    Fetch the clade of the db that's needed to render a jobs page.
+    """        
     # Fetch the role information 
     roles = Role.objects.filter(source__exact=title)
     if len(roles) == 0:
@@ -32,10 +35,11 @@ def react_jobs(request, title):
         'contact': roles[0].contact,
         'description': roles[0].description,
         'coordinators': coordinators,
-        'staff': jobstaff,
+        'jobs': jobstaff,
         'is_coordinator': is_coordinator_of(request.user, roles[0].source),
         'is_user': request.user.username,
         'volunteers': volunteers,
+        'summary': get_job_summary(request)
     }
     for c in Coordinator.objects.filter(source__exact=title):
         if c.url == "" : 
@@ -76,3 +80,25 @@ def react_jobs(request, title):
         'data': json.dumps(role),
     }
     return render(request, 'react/jobpage.html', context={'data': role})
+
+def get_job_summary(request) :
+    """
+    Get the job summary information.     
+    """    
+    roles = Role.objects.all().order_by('source')
+    navdata = []
+    for role in roles : 
+        jobcount = Job.objects.filter(source__exact=role.source.pk).aggregate(Sum('needs'))['needs__sum']
+        if jobcount is None : 
+            jobcount = 0            
+        personcount = Volunteer.objects.filter(source__exact=role.source.pk).count()
+        navdata.append({
+            'role': role.pk, 
+            'needed': jobcount - personcount, 
+            'jobs': jobcount, 
+            'status': role.status,
+            'is_coordinator': is_coordinator_of(request.user, role.source)          
+        })
+    
+    navdata.sort(reverse=True, key=lambda role: role['needed'])
+    return navdata
