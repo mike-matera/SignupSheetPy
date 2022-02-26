@@ -17,7 +17,7 @@ def memoize(func) :
     def memoizer(*args, **kwargs):
         key = func.__name__ 
         for arg in args : 
-            key += arg.__class__.__name__ + str(arg.pk)
+            key += arg.__class__.__name__ + str(arg.pk).replace(' ', '_')
         
         rval = cache.get(key)
         if rval == None :
