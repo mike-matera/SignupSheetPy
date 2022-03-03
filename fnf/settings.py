@@ -137,6 +137,7 @@ STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
+    ('js', BASE_DIR / 'dist'),
 ]
 
 # Default primary key field type
