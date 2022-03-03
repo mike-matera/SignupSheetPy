@@ -142,7 +142,12 @@
 									{% if volunteer.can_delete != None %}
 										<a href='javascript:void(0)' onclick='popup_click("{% url "delete" pk=volunteer.can_delete %}");'>Delete</a>
 									{% elif job.can_signup %}	
+										<div class="jobsignup" jobid="{{ job.job.pk }}">
+											Signup!
+										</div>
+										<!--
 										<a href='javascript:void(0)' onclick='popup_click("{% url "signup" pk=job.job.pk %}");'>Signup</a>
+										-->
 										<!-- <button onclick='popup_click("{% url "signup" pk=job.job.pk %}");'>Signup</button> -->
                                     {%  else  %}
                                         &nbsp;
@@ -166,6 +171,10 @@
 
 	</div>
 	{% include "popupform.html" %}		
+{% endblock %}
+
+{% block components %}	
+<script src="/static/js/signupform.js"></script>	
 {% endblock %}
 
 
