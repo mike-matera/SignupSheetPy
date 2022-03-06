@@ -20,7 +20,6 @@ from signup.access import is_coordinator, is_coordinator_of, can_signup, can_del
 
 from signup.views.badge import badgeFor
 import signup.views.source
-from signup.views.view_email_autocomplete import SignupFormCoordinator, SignupFormUser
 
 def index(request):
     
@@ -195,86 +194,69 @@ def jobs(request, title):
 
 @login_required
 def signup_view(request, pk):
+
     do_coordinator = False
-    if is_coordinator(request.user) : 
-        template_name='signup/signup-coordinator.html'
-        form = SignupFormCoordinator
-        do_coordinator = True
-    else:
-        template_name='signup/signup.html'
-        form = SignupFormUser
-        
     job = Job.objects.get(pk=pk)
     if job == None :
         raise Http404("Job does not exist")
 
     # TODO: Check perimssions 
-    
-    if request.method=='POST':
-        form = form(request.POST)
-        if form.is_valid() :         
-            try: 
-                with transaction.atomic() :
-                    signup_user = request.user
+    try: 
+        with transaction.atomic() :
+            signup_user = request.user
 
-                    if do_coordinator : 
-                        # Check if the form has another user's email in it. 
-                        other_user = form.cleaned_data.get('email', None) 
-                        if other_user is not None and other_user != u'': 
-                            for user in User.objects.filter(email__exact=other_user) :
-                                signup_user = user
-                                break
-                        
-                    # Create a Volunteer with form data 
-                    # We need the natural key from the job... this way 
-                    # if the job changes in a non-meaningful way this volunteer
-                    # continues to be valid. 
-                    v = Volunteer(
-                                  user = signup_user,
-                                  comment = form.cleaned_data['comment'],
-                                  source = job.source.pk,
-                                  title = job.title, 
-                                  start = job.start,
-                                  end = job.end,
-                                  )
-
-                    # NB: This feature requires discussion: Doing this will make it 
-                    # impossible for people to sign up their friends for shifts.
-                    #
-                    # Before we commit this to the database let's check to see if the 
-                    # user is already signed up for a shift at this time...
-                    #shifts = Volunteer.objects.filter(user__exact=request.user)
-                    #for s in shifts : 
-                    #    if s.start == v.start \
-                    #        or ( v.start < s.start and s.end < v.end ) \
-                    #        or ( v.start > s.start and v.start < s.end ) :
-                    #        raise ValueError("Overlap!")
-
-                    # Now add the row, so the count query works...
-                    v.save()
-                    
-                    # Now check if there are too many volunteers. This has to 
-                    # be done atomically. If we're overbooked, rollback. 
-                    volcount = Volunteer.objects.filter(source__exact=job.source.pk, title__exact=job.title, start__exact=job.start).count()
-                    if volcount > job.needs :
-                        raise IntegrityError("fuck! nabbed!")                         
-                    
-                    
-            except IntegrityError:
-                return HttpResponse('Oh no! This signup was nabbed!', status=450)
-
-            except ValueError:
-                return HttpResponse('Wait a second!', status=451)
+            #if do_coordinator : 
+            #    # Check if the form has another user's email in it. 
+            #    other_user = form.cleaned_data.get('email', None) 
+            #    if other_user is not None and other_user != u'': 
+            #        for user in User.objects.filter(email__exact=other_user) :
+            #            signup_user = user
+            #            break
                 
-            return redirect('jobs', job.source.pk)
+            # Create a Volunteer with form data 
+            # We need the natural key from the job... this way 
+            # if the job changes in a non-meaningful way this volunteer
+            # continues to be valid. 
+            v = Volunteer(
+                            user = signup_user,
+                            comment = "fucky fuck fuck",
+                            source = job.source.pk,
+                            title = job.title, 
+                            start = job.start,
+                            end = job.end,
+                            )
 
-        else:
-            return render(request, template_name, {'form':form, 'ret':job.source.pk, 'job':job})
+            # NB: This feature requires discussion: Doing this will make it 
+            # impossible for people to sign up their friends for shifts.
+            #
+            # Before we commit this to the database let's check to see if the 
+            # user is already signed up for a shift at this time...
+            #shifts = Volunteer.objects.filter(user__exact=request.user)
+            #for s in shifts : 
+            #    if s.start == v.start \
+            #        or ( v.start < s.start and s.end < v.end ) \
+            #        or ( v.start > s.start and v.start < s.end ) :
+            #        raise ValueError("Overlap!")
+
+            # Now add the row, so the count query works...
+            v.save()
             
-    else:
-        form = form()
-        return render(request, template_name, {'form':form, 'ret':job.source.pk, 'job':job})
+            # Now check if there are too many volunteers. This has to 
+            # be done atomically. If we're overbooked, rollback. 
+            volcount = Volunteer.objects.filter(source__exact=job.source.pk, title__exact=job.title, start__exact=job.start).count()
+            if volcount > job.needs :
+                raise IntegrityError("fuck! nabbed!")                         
+            
+            
+    except IntegrityError:
+        return HttpResponse('Oh no! This signup was nabbed!', status=450)
 
+    except ValueError:
+        return HttpResponse('Wait a second!', status=451)
+        
+    return HttpResponse('You got it', status=200)
+    
+    
 @login_required
 def delete(request, pk, template_name='signup/confirmdelete.html'):
     volunteer = Volunteer.objects.get(pk=pk)

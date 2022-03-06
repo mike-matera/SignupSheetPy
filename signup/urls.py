@@ -1,10 +1,12 @@
 from django.urls import path, include
 
 from signup.views import views
+from signup.views import email_suggest
 from signup.views.views import download_csv, eald_csv, jobs, email_list, signup_view, delete
 from signup.views.source import source_list, source_create, source_update, source_delete, source_all, source_lock
 from signup.views.registration import user, register
 from signup.views.react import react_jobs
+from signup.views.email_suggest import email_suggest
 
 urlpatterns = [
     path('source/', source_list, name='source_list'),
@@ -28,6 +30,8 @@ urlpatterns = [
     path('delete/<pk>', delete, name='delete'),
 
     path('r/jobs/<title>/', react_jobs, name='react_jobs'),
+
+    path('email_suggest/', email_suggest, name='email_suggest'),
 
     path('', views.index, name='index'),
 ]

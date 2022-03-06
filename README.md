@@ -37,10 +37,10 @@ Run the Django server:
 $ DJANGO_DEBUG=True python3 ./manage.py runserver
 ```
 
-The application will serve and the prompt won't return. If you want to do React development run the JSX translator: 
+The application will serve and the prompt won't return. If you want to compile the JavaScript resources: 
 
 ```console 
-$ npx babel --watch src --out-dir static/js --presets react-app/prod 
+$ npm run build 
 ```
 
 Now you can edit the files in `src/`

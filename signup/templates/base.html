@@ -7,27 +7,8 @@
 		<link rel="stylesheet" href="{% static 'bootstrap-3.3.6-dist/css/bootstrap-theme.min.css'%}">
 		<link href="https://fonts.googleapis.com/css?family=Patrick+Hand" rel="stylesheet">
 		<link rel="stylesheet" href="{% static 'fnf.css'%}">
-
-		<!--
-		<script src="{% static 'admin/js/vendor/jquery/jquery.min.js'%}"></script>
-		<script src="{% static 'bootstrap-3.3.6-dist/js/bootstrap.min.js'%}"></script>
-		-->
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>		
-
-		<!-- Latest compiled and minified CSS -->
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-
-		<!-- Latest compiled and minified JavaScript -->
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-
-		<script>
-			// https://github.com/select2/select2/issues/600#issuecomment-102857595
-			 $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
-		</script>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-
 	</head>
-
     <body>
       <div class="container-fluid">
 		<div class="header clearfix">
@@ -35,21 +16,6 @@
 		</div>
 		{% block content %}{% endblock content %}
 	  </div>
-
-	  <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
-	  <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>	
-	  <script src="https://unpkg.com/react/umd/react.production.min.js" crossorigin></script>
-
-	  <script
-		src="https://unpkg.com/react-dom/umd/react-dom.production.min.js"
-		crossorigin></script>
-	  
-	  <script
-		src="https://unpkg.com/react-bootstrap@next/dist/react-bootstrap.min.js"
-		crossorigin></script>
-	  
-	  <script>var Alert = ReactBootstrap.Alert;</script>
-	  
 
 	  {% block components %}{% endblock components %}
 	</body>

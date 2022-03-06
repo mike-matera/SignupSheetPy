@@ -137,21 +137,18 @@
 				<span class="jobdescription">{{ job.job.description | safe }}</span>
 				<div class="joblist">
 					{% for volunteer in job.volunteers %} 
+					{% if volunteer.volunteer != None %}
+						<div class="jobsignup" is_coordinator="{{ is_coordinator }}" volunteer="{{ volunteer.volunteer.user.first_name | title }} {{ volunteer.volunteer.user.last_name | title }}" candelete="{{ volunteer.can_delete }}" jobid="{{ job.job.pk }}">
+							Signup!
+						</div>
+					{% else %}
+						<div class="jobsignup" is_coordinator="{{ is_coordinator }}" candelete="{{ volunteer.can_delete }}" jobid="{{ job.job.pk }}">
+							Signup!
+						</div>
+					{% endif %}
+					<!--	
 						<div class="row row-striped">
 							<div class="col-xs-2 text-right">
-									{% if volunteer.can_delete != None %}
-										<a href='javascript:void(0)' onclick='popup_click("{% url "delete" pk=volunteer.can_delete %}");'>Delete</a>
-									{% elif job.can_signup %}	
-										<div class="jobsignup" jobid="{{ job.job.pk }}">
-											Signup!
-										</div>
-										<!--
-										<a href='javascript:void(0)' onclick='popup_click("{% url "signup" pk=job.job.pk %}");'>Signup</a>
-										-->
-										<!-- <button onclick='popup_click("{% url "signup" pk=job.job.pk %}");'>Signup</button> -->
-                                    {%  else  %}
-                                        &nbsp;
-									{% endif %}
 							</div>
 							{% if volunteer.volunteer != None %}
 								<div class="col-xs-3 volunteername">
@@ -164,6 +161,7 @@
 								</div>
 							{% endif %}
 						</div>
+					-->
 					{% endfor %}
 				</div>
 			</div>	
@@ -174,7 +172,7 @@
 {% endblock %}
 
 {% block components %}	
-<script src="/static/js/signupform.js"></script>	
+<script src="/static/js/main.js"></script>	
 {% endblock %}
 
 
