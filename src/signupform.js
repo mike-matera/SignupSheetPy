@@ -7,8 +7,10 @@ import Button from 'react-bootstrap/Button'
 import ReactDOM from 'react-dom'
 import React from 'react'
 import Combobox from "react-widgets/Combobox";
+import Cookies from 'js-cookie'
 
 import "react-widgets/styles.css";
+import { ThemeConsumer } from 'react-bootstrap/esm/ThemeProvider';
 
 const e = React.createElement;
 
@@ -18,9 +20,12 @@ class SignupButton extends React.Component {
     this.state = { 
       signup: true,
       isLoaded: false,
-      emails: []
+      emails: [],
+      comment: ''
     };
     this.handleClick = this.handleClick.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleDelete = this.handleDelete.bind(this);
   }
 
   handleClick(e) {
@@ -51,11 +56,73 @@ class SignupButton extends React.Component {
     })
   }
 
+  handleSubmit(e) {
+    e.preventDefault();
+    const csrftoken = Cookies.get('csrftoken');
+    fetch('/signup/', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken
+      },
+      body: JSON.stringify({
+        'user': this.state.user,
+        'jobid': this.props.job,
+        'comment': this.state.comment 
+      })
+    }).then(response => {
+      if (!response.ok) {
+        window.confirm("There was an error signing up. Someone might have got there first or you're already busy at this time.")
+      }
+      location.reload()
+    }).catch(error => {
+      window.confirm("Something went wrong!")
+      location.reload()
+    })
+  }
+
+  handleDelete(e) {
+    e.preventDefault();
+    if (! window.confirm("Are you sure?")) {
+      return 
+    }
+    const csrftoken = Cookies.get('csrftoken');
+    fetch('/delete/', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken
+      },
+      body: JSON.stringify({
+        'signup': this.props.candelete,
+      })
+    }).then(response => {
+      if (!response.ok) {
+        window.confirm("There was an error.")
+      }
+      location.reload()
+    }).catch(error => {
+      window.confirm("Something went wrong!")
+      location.reload()
+    })
+  }
+
   show_available() {
     return (
       <a onClick={this.handleClick}>
         { (this.props.volunteer == null)? "Signup!": this.props.volunteer }
       </a>
+    )
+  }
+
+  show_deleteable() {
+    return (
+      <>
+        { (this.props.volunteer == null)? "Signup!": this.props.volunteer }
+        <Button variant='danger' onClick={this.handleDelete}>Delete</Button>
+      </>      
     )
   }
 
@@ -71,6 +138,7 @@ class SignupButton extends React.Component {
               hideEmptyPopup
               placeholder="Search for email..."
               data={this.state.emails}
+              onChange={value => this.setState({'user': value})}
           />
         </Col>
         </Row>
@@ -82,11 +150,16 @@ class SignupButton extends React.Component {
         <Row style={{ paddingBottom: '1em' }} >
           <Col sm={12}>
             Comment:
-            <input style={{ width: '100%' }} type="text" name="name" />
+            <input 
+              style={{ width: '100%' }} 
+              type="text" 
+              value={this.state.comment} 
+              onChange={(event) => {this.setState({'comment': event.target.value})}} 
+            />
           </Col>
         </Row>
         <Row>
-          <Col sm={2}><Button onClick={this.handleClick}>Submit</Button></Col>
+          <Col sm={2}><Button onClick={this.handleSubmit}>Submit</Button></Col>
           <Col sm={2}><Button variant='danger' onClick={this.handleClick}>Cancel</Button></Col>
         </Row>
       </Container>
@@ -95,16 +168,17 @@ class SignupButton extends React.Component {
 
   render() {
     if (this.state.signup) {
-      return this.show_available()
+      if (this.props.candelete === 'None') {
+        return this.show_available()
+      }
+      else {
+        return this.show_deleteable()
+      }
     }
     else {
       return this.show_signup()
     }
   }
-
-  componentDidMount() {
-  }
-
 }
 
 const domContainer = document.querySelectorAll('.jobsignup');
@@ -114,7 +188,7 @@ domContainer.forEach(
       'candelete': element.getAttribute('candelete'),
       'job': element.getAttribute('jobid'),
       'volunteer': element.getAttribute('volunteer'),
-      'is_coordinator': element.getAttribute('is_coordinator')
+      'is_coordinator': element.getAttribute('is_coordinator'),
     }), element);
   }
 )

@@ -26,8 +26,9 @@ urlpatterns = [
 
     path('jobs/<title>/', jobs, name='jobs'),
     path('email/<role>/', email_list, name='email_list'),
-    path('signup/<pk>', signup_view, name='signup'),
-    path('delete/<pk>', delete, name='delete'),
+
+    path('signup/', signup_view, name='signup'),
+    path('delete/', delete, name='delete'),
 
     path('r/jobs/<title>/', react_jobs, name='react_jobs'),
 

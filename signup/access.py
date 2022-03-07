@@ -108,7 +108,7 @@ def is_coordinator_of(user, source):
 #   - If the job is protected a coordinator can signup
 #   - Otherwise, anyone can. 
 #
-def can_signup(user, role, job):
+def can_signup(user, job):
     if user.is_anonymous:
         return False;
 
@@ -119,7 +119,7 @@ def can_signup(user, role, job):
 
     elif gse == Global.COORDINATOR_ONLY :
         # Coordinator preview.
-
+        role = Role.objects.get(pk=job.source)
         if role.status == Role.DISABLED :
             if user.is_superuser:
                 return True;

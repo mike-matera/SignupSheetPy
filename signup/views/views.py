@@ -1,4 +1,4 @@
-import csv, codecs, io
+import csv, codecs, io, json
 from operator import imod
 
 from django.http import HttpResponse
@@ -14,6 +14,7 @@ from django.db.models import Q
 from django.conf import settings
 from django.db.models import Sum
 from django.core.cache import cache
+from django.views.decorators.http import require_http_methods
 
 from signup.models import Coordinator, Job, Role, Volunteer, Global
 from signup.access import is_coordinator, is_coordinator_of, can_signup, can_delete, is_ea, is_ld, EA_THRESHOLD, LD_THRESHOLD, global_signup_enable
@@ -146,7 +147,7 @@ def jobs(request, title):
         # Determine if the user is able to signup
         entry['needed'] = needed
         if needed > 0 :
-            entry['can_signup'] = can_signup(request.user, role, job)
+            entry['can_signup'] = can_signup(request.user, job)
         else:
             entry['can_signup'] = False
             
@@ -193,33 +194,49 @@ def jobs(request, title):
     return render(request, 'signup/jobpage.html', context=template_values)
 
 @login_required
-def signup_view(request, pk):
+@require_http_methods(["POST"])
+def signup_view(request):
 
-    do_coordinator = False
-    job = Job.objects.get(pk=pk)
+    try:
+        data = json.loads(request.body)
+        print('Request data:', data)
+        data = {
+            'jobid': int(data['jobid']),
+            'comment': data['comment'],
+            'user': data.get('user'), # user is optional
+        }
+    except Exception as e: 
+        print("Fucked request.")
+        raise Http404()
+
+    job = Job.objects.get(pk=data['jobid'])
     if job == None :
-        raise Http404("Job does not exist")
+        print("Job doesn't exist.")
+        raise Http404()
 
-    # TODO: Check perimssions 
     try: 
         with transaction.atomic() :
             signup_user = request.user
 
-            #if do_coordinator : 
-            #    # Check if the form has another user's email in it. 
-            #    other_user = form.cleaned_data.get('email', None) 
-            #    if other_user is not None and other_user != u'': 
-            #        for user in User.objects.filter(email__exact=other_user) :
-            #            signup_user = user
-            #            break
-                
+            if not can_signup(request.user, job):
+                print("User cannot signup.")
+                raise Http404()
+
+            if data['user'] is not None:
+                if not is_coordinator_of(request.user, job.source):
+                    print("Non-coordinator third party signup.")
+                    raise Http404()
+                for user in User.objects.filter(email__exact=data['user']):
+                    signup_user = user
+                    break
+
             # Create a Volunteer with form data 
             # We need the natural key from the job... this way 
             # if the job changes in a non-meaningful way this volunteer
             # continues to be valid. 
             v = Volunteer(
                             user = signup_user,
-                            comment = "fucky fuck fuck",
+                            comment = data['comment'],
                             source = job.source.pk,
                             title = job.title, 
                             start = job.start,
@@ -231,12 +248,13 @@ def signup_view(request, pk):
             #
             # Before we commit this to the database let's check to see if the 
             # user is already signed up for a shift at this time...
-            #shifts = Volunteer.objects.filter(user__exact=request.user)
-            #for s in shifts : 
-            #    if s.start == v.start \
-            #        or ( v.start < s.start and s.end < v.end ) \
-            #        or ( v.start > s.start and v.start < s.end ) :
-            #        raise ValueError("Overlap!")
+            shifts = Volunteer.objects.filter(user__exact=signup_user)
+            for s in shifts : 
+                if s.start == v.start \
+                    or ( v.start < s.start and s.end < v.end ) \
+                    or ( v.start > s.start and v.start < s.end ):
+                    print("Overlap.")
+                    raise ValueError("Overlap!")
 
             # Now add the row, so the count query works...
             v.save()
@@ -245,33 +263,48 @@ def signup_view(request, pk):
             # be done atomically. If we're overbooked, rollback. 
             volcount = Volunteer.objects.filter(source__exact=job.source.pk, title__exact=job.title, start__exact=job.start).count()
             if volcount > job.needs :
-                raise IntegrityError("fuck! nabbed!")                         
-            
-            
+                print("Nabbed.")
+                raise IntegrityError("fuck! nabbed!")
+                        
     except IntegrityError:
+        print("Nabbed")
         return HttpResponse('Oh no! This signup was nabbed!', status=450)
 
     except ValueError:
+        print("Error")
         return HttpResponse('Wait a second!', status=451)
         
     return HttpResponse('You got it', status=200)
     
     
 @login_required
-def delete(request, pk, template_name='signup/confirmdelete.html'):
-    volunteer = Volunteer.objects.get(pk=pk)
+@require_http_methods(["POST"])
+def delete(request):
+
+    try:
+        data = json.loads(request.body)
+        print('Request data:', data)
+        data = {
+            'signup': int(data['signup']),
+        }
+    except Exception as e: 
+        print("Fucked request.")
+        raise Http404()
+
+    volunteer = Volunteer.objects.get(pk=data['signup'])
     if volunteer == None :
+        print("Job does not exist.")
         raise Http404("Volunteer does not exist")
 
     # Check perimssions 
-    #if request.user.pk != volunteer.pk and not request.user.is_staff :
-    #    raise HttpResponseForbidden
+    if not can_delete(request.user, data['signup']):
+        print("Can't delete.")
+        raise Http404("Can't delete.")
 
-    if request.method=='POST':
-        volunteer.delete()
-        return redirect('jobs', volunteer.source)
-    
-    return render(request, template_name, {'object':volunteer, 'ret':volunteer.source})
+    volunteer.delete()
+
+    return HttpResponse('Goodbye.', status=200)
+
 
 @user_passes_test(lambda u: is_coordinator(u))
 def email_list(request, role, template_name='misc/email_list.html'):
