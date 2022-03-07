@@ -2,6 +2,12 @@
 
 set -e 
 
+if [ "$DJANGO_DEBUG" = "True" ]; then 
+    export DJANGO_ADMIN_EMAIL=test@test.test 
+    export DJANGO_ADMIN_USERNAME=$DJANGO_ADMIN_EMAIL
+    export DJANGO_SUPERUSER_PASSWORD=test 
+fi 
+
 python3 ./manage.py migrate 
 python3 ./manage.py createsuperuser --no-input --email $DJANGO_ADMIN_EMAIL --username $DJANGO_ADMIN_USERNAME || true
 python3 ./manage.py runserver 0.0.0.0:8000
