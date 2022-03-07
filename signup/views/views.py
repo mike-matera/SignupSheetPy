@@ -128,11 +128,12 @@ def jobs(request, title):
         entry['volunteers'] = []
         for volunteer in Volunteer.objects.filter(source__exact=job.source.pk, title__exact=job.title, start__exact=job.start).select_related('user') :
             vol = {}
-            vol['volunteer'] = volunteer
+            vol['volunteer'] = f"{volunteer.user.first_name} {volunteer.user.last_name}"
+            vol['comment'] = volunteer.comment
             if can_delete(request.user, volunteer) :
-                vol['can_delete'] = volunteer.id
+                vol['signupid'] = volunteer.id
             else:
-                vol['can_delete'] = None
+                vol['signupid'] = None
                                             
             entry['volunteers'].append(vol)
                     
@@ -141,7 +142,8 @@ def jobs(request, title):
         for _ in range(needed) :
             vol = {}
             vol['volunteer'] = None
-            vol['can_delete'] = None 
+            vol['comment'] = None
+            vol['signupid'] = None 
             entry['volunteers'].append(vol)
         
         # Determine if the user is able to signup
@@ -297,7 +299,7 @@ def delete(request):
         raise Http404("Volunteer does not exist")
 
     # Check perimssions 
-    if not can_delete(request.user, data['signup']):
+    if not can_delete(request.user, volunteer):
         print("Can't delete.")
         raise Http404("Can't delete.")
 

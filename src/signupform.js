@@ -8,9 +8,9 @@ import ReactDOM from 'react-dom'
 import React from 'react'
 import Combobox from "react-widgets/Combobox";
 import Cookies from 'js-cookie'
+import DeleteButton from './deletejob.js'
 
 import "react-widgets/styles.css";
-import { ThemeConsumer } from 'react-bootstrap/esm/ThemeProvider';
 
 const e = React.createElement;
 
@@ -25,7 +25,6 @@ class SignupButton extends React.Component {
     };
     this.handleClick = this.handleClick.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleDelete = this.handleDelete.bind(this);
   }
 
   handleClick(e) {
@@ -82,48 +81,32 @@ class SignupButton extends React.Component {
     })
   }
 
-  handleDelete(e) {
-    e.preventDefault();
-    if (! window.confirm("Are you sure?")) {
-      return 
+  show_default() {
+    let delbutton = ""    
+    if (this.props.signupid !== 'None') {
+      delbutton = (
+        <DeleteButton signupid={this.props.signupid} />
+      )
     }
-    const csrftoken = Cookies.get('csrftoken');
-    fetch('/delete/', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrftoken
-      },
-      body: JSON.stringify({
-        'signup': this.props.candelete,
-      })
-    }).then(response => {
-      if (!response.ok) {
-        window.confirm("There was an error.")
+
+    if (this.props.volunteer === 'None') {
+      if (this.props.can_signup) {
+        return (
+          <a onClick={this.handleClick}>Signup!</a>
+        )  
       }
-      location.reload()
-    }).catch(error => {
-      window.confirm("Something went wrong!")
-      location.reload()
-    })
-  }
-
-  show_available() {
-    return (
-      <a onClick={this.handleClick}>
-        { (this.props.volunteer == null)? "Signup!": this.props.volunteer }
-      </a>
-    )
-  }
-
-  show_deleteable() {
-    return (
+      else {
+        return ""
+      }
+    }
+    else {
+      return (
       <>
-        { (this.props.volunteer == null)? "Signup!": this.props.volunteer }
-        <Button variant='danger' onClick={this.handleDelete}>Delete</Button>
-      </>      
-    )
+        {this.props.volunteer} -- {this.props.comment} {delbutton}
+      </>
+      )
+    }
+
   }
 
   show_signup() {
@@ -168,12 +151,7 @@ class SignupButton extends React.Component {
 
   render() {
     if (this.state.signup) {
-      if (this.props.candelete === 'None') {
-        return this.show_available()
-      }
-      else {
-        return this.show_deleteable()
-      }
+      return this.show_default()
     }
     else {
       return this.show_signup()
@@ -185,10 +163,12 @@ const domContainer = document.querySelectorAll('.jobsignup');
 domContainer.forEach(
   element => {
     ReactDOM.render(e(SignupButton, { 
-      'candelete': element.getAttribute('candelete'),
+      'signupid': element.getAttribute('signupid'),
       'job': element.getAttribute('jobid'),
       'volunteer': element.getAttribute('volunteer'),
+      'comment': element.getAttribute('comment'),
       'is_coordinator': element.getAttribute('is_coordinator'),
+      'can_signup': element.getAttribute('can_signup') === 'True',
     }), element);
   }
 )

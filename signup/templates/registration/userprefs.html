@@ -18,7 +18,7 @@
  	<tr>
 		<td>{{ signup.source }} : {{ signup.title }}</td>
 		<td>{{ signup.start | date:"l P" }} to {{ signup.end | date:"l P" }}</td>
-		<td><a href='javascript:void(0)' onclick='popup_click("{% url "delete" pk=signup.pk %}");'>Delete</a></td>
+    <td><div class="deletebutton" signupid="{{ signup.pk }}"/></td>
 	</tr>
   {% endfor %}
 </table>
@@ -36,3 +36,6 @@
   
 {% endblock %}
 
+{% block components %}	
+<script src="/static/js/main.js"></script>	
+{% endblock %}

@@ -137,31 +137,14 @@
 				<span class="jobdescription">{{ job.job.description | safe }}</span>
 				<div class="joblist">
 					{% for volunteer in job.volunteers %} 
-					{% if volunteer.volunteer != None %}
-						<div class="jobsignup" is_coordinator="{{ is_coordinator }}" volunteer="{{ volunteer.volunteer.user.first_name | title }} {{ volunteer.volunteer.user.last_name | title }}" candelete="{{ volunteer.can_delete }}" jobid="{{ job.job.pk }}">
-							Signup!
-						</div>
-					{% else %}
-						<div class="jobsignup" is_coordinator="{{ is_coordinator }}" candelete="{{ volunteer.can_delete }}" jobid="{{ job.job.pk }}">
-							Signup!
-						</div>
-					{% endif %}
-					<!--	
-						<div class="row row-striped">
-							<div class="col-xs-2 text-right">
-							</div>
-							{% if volunteer.volunteer != None %}
-								<div class="col-xs-3 volunteername">
-									{{ volunteer.volunteer.user.first_name | title}} {{ volunteer.volunteer.user.last_name | title}} 
-								</div>
-								<div class="col-xs-7 volunteercomment">
-									{% if volunteer.volunteer.comment != "" %}
-										{{ volunteer.volunteer.comment }}
-									{% endif %}
-								</div>
-							{% endif %}
-						</div>
-					-->
+					<div class="jobsignup" 
+						is_coordinator="{{ coordinator_of }}" 
+						volunteer="{{ volunteer.volunteer }}" 
+						comment="{{ volunteer.comment }}"
+						signupid="{{ volunteer.signupid }}"
+						jobid="{{ job.job.pk }}"
+						can_signup="{{ job.can_signup }}"
+						/>
 					{% endfor %}
 				</div>
 			</div>	
