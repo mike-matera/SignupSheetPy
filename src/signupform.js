@@ -19,37 +19,16 @@ class SignupButton extends React.Component {
     super(props);
     this.state = { 
       signup: true,
-      isLoaded: false,
       emails: [],
       comment: ''
     };
     this.handleClick = this.handleClick.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.updateSuggest = this.updateSuggest.bind(this);
   }
 
   handleClick(e) {
     e.preventDefault();
-    if (!this.state.isLoaded) {
-      fetch("/email_suggest/")
-        .then(res => res.json())
-        .then(
-          (res) => {
-            this.setState({
-              isLoaded: true,
-              emails: res.items
-            });
-          },
-          // Note: it's important to handle errors here
-          // instead of a catch() block so that we don't swallow
-          // exceptions from actual bugs in components.
-          (error) => {
-            this.setState({
-              isLoaded: true,
-              emails: []
-            });
-          }
-        )
-        }
     this.setState({
       signup: ! this.state.signup
     })
@@ -79,6 +58,30 @@ class SignupButton extends React.Component {
       window.confirm("Something went wrong!")
       location.reload()
     })
+  }
+
+  updateSuggest(value) {
+    if (value === "") {
+      return
+    }
+    fetch("/email_suggest/" + value)
+      .then(res => res.json())
+      .then(
+        (res) => {
+          console.log("Update:", res.items)
+          this.setState({
+            emails: res.items
+          });
+        },
+        // Note: it's important to handle errors here
+        // instead of a catch() block so that we don't swallow
+        // exceptions from actual bugs in components.
+        (error) => {
+          this.setState({
+            emails: []
+          });
+        }
+      )
   }
 
   show_default() {
@@ -119,9 +122,10 @@ class SignupButton extends React.Component {
           <Combobox
               hideCaret
               hideEmptyPopup
+              filter="contains"
               placeholder="Search for email..."
               data={this.state.emails}
-              onChange={value => this.setState({'user': value})}
+              onChange={this.updateSuggest}
           />
         </Col>
         </Row>

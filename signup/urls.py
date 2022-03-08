@@ -32,7 +32,7 @@ urlpatterns = [
 
     path('r/jobs/<title>/', react_jobs, name='react_jobs'),
 
-    path('email_suggest/', email_suggest, name='email_suggest'),
+    path('email_suggest/<query>', email_suggest, name='email_suggest'),
 
     path('', views.index, name='index'),
 ]
