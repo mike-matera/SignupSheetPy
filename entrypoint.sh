@@ -15,10 +15,10 @@ fi
 python3 ./manage.py migrate 
 python3 ./manage.py createsuperuser --no-input --email $DJANGO_ADMIN_EMAIL --username $DJANGO_ADMIN_USERNAME || true
 
-if [ "$DJANGO_DEBUG" = "True" ]; then 
-    for fixture in fixtures/*.json; do 
-        python3 ./manage.py loaddata $fixture
-    done
-fi
+#if [ "$DJANGO_DEBUG" = "True" ]; then 
+#    for fixture in fixtures/*.json; do 
+#        python3 ./manage.py loaddata $fixture
+#    done
+#fi
 
 python3 ./manage.py runserver 0.0.0.0:8000
