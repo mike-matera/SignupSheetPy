@@ -2,9 +2,9 @@
 
 set -e 
 
-if [ -z "$DJANGO_DEBUG"]; then 
-    export DJANGO_DEBUG=True
-fi
+#if [ -z "$DJANGO_DEBUG"]; then 
+#    export DJANGO_DEBUG=True
+#fi
 
 if [ "$DJANGO_DEBUG" = "True" ]; then 
     export DJANGO_ADMIN_EMAIL=test@test.test 
