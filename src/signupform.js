@@ -64,7 +64,7 @@ class SignupButton extends React.Component {
     if (value === "") {
       return
     }
-    fetch("/email_suggest/" + value)
+    fetch("/email_suggest/q=" + encodeURIComponent(value))
       .then(res => res.json())
       .then(
         (res) => {

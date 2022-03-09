@@ -10,7 +10,7 @@ from django.conf import settings
 from django.http import Http404
 from django.db.models import Sum
 
-from signup.views.views import filterNavData, index
+from signup.views.jobs import filterNavData, index
 
 from signup.models import Coordinator, Job, Role, Volunteer, Global
 from signup.access import is_coordinator, is_coordinator_of, can_signup, can_delete, is_ea, is_ld, EA_THRESHOLD, LD_THRESHOLD, global_signup_enable
