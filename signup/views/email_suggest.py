@@ -16,7 +16,7 @@ def email_suggest(request, query=""):
     if query.strip() == "":
         items = []
     else:
-        items = list(filter(lambda u: query in u, users))
+        items = list(email for email in users if query in email)[0:20]
     
     return JsonResponse({
         'items': items
