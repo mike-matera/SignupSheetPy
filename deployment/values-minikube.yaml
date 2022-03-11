@@ -1,0 +1,19 @@
+
+djangoEnvironment: "production"
+djangoAdminUsername: "test@test.test"
+djangoAdminPassword: "test"
+djangoAdminEmail: "test@test.test"
+djangoSecretKey: "this-is-a-very-bogus-key"
+djangoEmailBackend: "django.core.mail.backends.console.EmailBackend"
+djangoEmailHost: ""
+djangoEmailPort: ""
+djangoEmailUser: ""
+djangoEmailPassword: ""
+djangoEmailDefaultFrom: "staffsheet@fnf.org"
+
+mariadb:
+  auth:
+    database: signup
+    username: signupuser
+    password: "test"
+    rootPassword: "test"
