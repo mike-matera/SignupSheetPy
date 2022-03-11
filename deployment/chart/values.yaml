@@ -86,6 +86,13 @@ djangoAdminUsername: "test@test.test"
 djangoAdminPassword: "test"
 djangoAdminEmail: "test@test.test"
 djangoSecretKey: "this-is-a-very-bogus-key"
+djangoEmailBackend: "django.core.mail.backends.console.EmailBackend"
+#djangoEmailBackend: "django.core.mail.backends.smtp.EmailBackend"
+djangoEmailHost: ""
+djangoEmailPort: ""
+djangoEmailUser: ""
+djangoEmailPassword: ""
+djangoEmailDefaultFrom: "staffsheet@fnf.org"
   
 mariadb:
   auth:
