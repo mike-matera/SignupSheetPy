@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/mike-matera/signupsheetpy
-  pullPolicy: Always
+  repository: signup
+  pullPolicy: Never
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "release"
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -81,20 +81,18 @@ tolerations: []
 
 affinity: {}
 
-auth:
-  django-debug: "True"
-  django-admin-username: "test" 
-  django-admin-password: "test"
-  django-admin-email: "test@test.test"
-  django-secret-key: 'ASJas9dafsjdifajsid34tmksdf-d4@=x_esssjxm1id55s4x)f)!v)vc#^dg912c$^b!$&w5%4n(7'
-  db-type: "mariadb"
-  db-username: "signupuser"
-  db-schema: "signup" 
+djangoEnvironment: "production"
+djangoAdminUsername: "test@test.test"
+djangoAdminPassword: "test"
+djangoAdminEmail: "test@test.test"
+djangoSecretKey: "this-is-a-very-bogus-key"
   
 mariadb:
   auth:
     database: signup
     username: signupuser
+    password: ""
+    rootPassword: ""
 
   primary:
     resources:

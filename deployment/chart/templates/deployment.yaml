@@ -49,43 +49,25 @@ spec:
               port: 8000
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          envFrom:
-          - configMapRef:
-              name: {{ .Release.Name }}-signup-config
           env:
-          - name: DJANGO_ADMIN_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Release.Name }}-django-admin
-                key: django-admin-username
-          - name: DJANGO_SUPERUSER_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Release.Name }}-django-admin
-                key: django-admin-password
-          - name: DJANGO_ADMIN_EMAIL
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Release.Name }}-django-admin
-                key: django-admin-email
-          - name: DJANGO_SECRET_KEY
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Release.Name }}-django-admin
-                key: django-secret-key
+          - name: DJANGO_DB_HOST
+            value: {{ include "chart.mariadb.fullname" . }}
+          - name: DJANGO_DB_PORT
+            value: "3306"
+          - name: DJANGO_DB_NAME
+            value: {{ .Values.mariadb.auth.database }}
           - name: DJANGO_DB_USER
-            value: {{ index .Values.auth "db-username" }}
+            value: {{ .Values.mariadb.auth.username }}
           - name: DJANGO_DB_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: {{ .Release.Name }}-mariadb
+                name: {{ include "chart.mariadb.fullname" . }}
                 key: mariadb-password
-          - name: DJANGO_DB_NAME
-            value: {{ index .Values.auth "db-schema" }}
-          - name: DJANGO_DB_HOST
-            value: {{ .Release.Name }}-mariadb
-          - name: DJANGO_DB_PORT
-            value: "3306"
+          envFrom:
+          - secretRef:
+              name: {{ .Release.Name }}-signup-secrets
+          - configMapRef:
+              name: {{ .Release.Name }}-signup-config
       initContainers:
       - name: init-wait-db
         image: busybox:1.31
